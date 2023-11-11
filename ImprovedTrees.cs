@@ -1,3 +1,7 @@
+using ImprovedTrees.Utilities;
+using Unity.VisualScripting;
+using ImprovedTrees.DynamicTrees;
+
 namespace ImprovedTrees
 {
     public class Main : MelonMod
@@ -7,6 +11,9 @@ namespace ImprovedTrees
         {
             get => assetBundle ?? throw new System.NullReferenceException(nameof(assetBundle));
         }
+
+        internal static SaveDataManager sdm = new SaveDataManager();
+
         public override void OnInitializeMelon()
         {
             MelonLogger.Msg("Improved Trees is online");
@@ -17,10 +24,17 @@ namespace ImprovedTrees
 
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
+            if (sceneName.ToLowerInvariant().Contains("menu") || sceneName.ToLowerInvariant().Contains("root")) return;
+
+            if(!sceneName.Contains("_SANDBOX") && !sceneName.Contains("_DLC") && !sceneName.Contains("_WILDLIFE"))
+            {
+                GameObject.Find("SCRIPT_EnvironmentSystems").AddComponent<DynamicTreeData>();
+                MelonLogger.Msg("Added component on object in scene: {0}", sceneName);
+            }
+
             if (GameManager.GetWeatherComponent().IsIndoorScene()) return;
 
-            Utilities.TextureHelper.ReplaceTreeTextures();
-            
+            TextureHelper.ReplaceTreeTextures(sceneName);
         }
 
         private static AssetBundle LoadAssetBundle(string path)
@@ -33,6 +47,5 @@ namespace ImprovedTrees
                 ? AssetBundle.LoadFromMemory(memoryStream.ToArray())
                 : throw new System.Exception("No data loaded!");
         }
-
     }
 }

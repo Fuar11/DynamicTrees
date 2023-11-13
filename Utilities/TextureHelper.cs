@@ -8,30 +8,23 @@ using UnityEngine.AddressableAssets;
 using UnityEngine;
 using Il2CppTLD.AddressableAssets;
 using Il2Cpp;
-using ImprovedTrees;
+using DynamicTrees.DynamicTreesComponent;
 using Unity.VisualScripting;
-using ImprovedTrees.DynamicTrees;
+using UnityEngine.Analytics;
 
-namespace ImprovedTrees.Utilities
+namespace DynamicTrees.Utilities
 {
     internal class TextureHelper
     {
 
-        public static string[] pineTrees = { "TRN_TreeBarkPine_Clear", "TRN_TreeBarkPine_Clear", "TRN_TreeBarkPine_Clear", "TRN_TreeBarkPine_Clear", "TRN_TreeBarkPine_Clear", "TRN_TreeBarkPine_Clear", "TRN_TreeBarkPine_Clear", "TRN_TreeBarkPine_Snow_A"};
+        public static string[] pineTrees = { "TRN_TreeBarkPine_Clear", "TRN_TreeBarkPine_Lowest", "TRN_TreeBarkPine_Low", "TRN_TreeBarkPine_LowMedium", "TRN_TreeBarkPine_Medium", "TRN_TreeBarkPine_HighMedium", "TRN_TreeBarkPine_High", "TRN_TreeBarkPine_Highest", "TRN_TreeBarkPine_Snow_A" };
         public static string[] spruceTrees = { };
 
         //entry
         public static void ReplaceTreeTextures(string scene)
         {
-           
-            if (scene == "AshCanyonRegion" || scene == "BlackrockRegion" || scene == "LongRailTransitionZone" || scene == "HubRegion" || scene == "AirfieldRegion")
-            {
-                return;
-            }
-
             ReplaceTerrainTreeTextures(scene);
             ReplaceInSceneTreeTextures(scene);
-
         }
 
         //for old regions
@@ -71,11 +64,11 @@ namespace ImprovedTrees.Utilities
             {
                 terrainData = GameObject.Find("Art/Terrain/Terrain_main").GetComponent<Terrain>().terrainData;
             }
-            else if(scene == "RuralRegion")
+            else if (scene == "RuralRegion")
             {
                 terrainData = GameObject.Find("Art/Terrain_RuralMain").GetComponent<Terrain>().terrainData;
             }
-            else if(scene == "CoastalRegion")
+            else if (scene == "CoastalRegion")
             {
                 terrainData = GameObject.Find("Art/Terrain_CoastalMain").GetComponent<Terrain>().terrainData;
             }
@@ -125,11 +118,11 @@ namespace ImprovedTrees.Utilities
 
             GameObject trees = new GameObject();
 
-            if(scene == "MarshRegion")
+            if (scene == "MarshRegion")
             {
                 trees = GameObject.Find("Art/Terrain/Trees");
             }
-            else if(scene == "LakeRegion")
+            else if (scene == "LakeRegion")
             {
                 trees = GameObject.Find("Art/NavmeshHelpers");
             }
@@ -181,28 +174,63 @@ namespace ImprovedTrees.Utilities
         private static void ReplaceInSceneTreeTextures(string scene)
         {
 
-                GameObject Trees = GetInSceneTreesPerScene(scene);
-                Transform treeObjects = Trees.transform;
-                
-                for (int i = 0; i < treeObjects.childCount; i++)
+            GameObject Trees = GetInSceneTreesPerScene(scene);
+            Transform treeObjects = Trees.transform;
+
+            for (int i = 0; i < treeObjects.childCount; i++)
+            {
+                Transform tree = treeObjects.GetChild(i);
+
+
+                //check to make sure the tree is actually a tree prefab and not some other object, in which case skip to the next one
+                if (tree.gameObject.transform.childCount == 0 || !tree.gameObject.transform.GetChild(0).name.ToLowerInvariant().Contains("lod")) continue;
+
+                MeshRenderer renderer = tree.gameObject.transform.GetChild(0).GetComponent<MeshRenderer>();
+                if (renderer)
                 {
-                    Transform tree = treeObjects.GetChild(i);
-
-
-                    //check to make sure the tree is actually a tree prefab and not some other object, in which case skip to the next one
-                    if (tree.gameObject.transform.childCount == 0 || !tree.gameObject.transform.GetChild(0).name.ToLowerInvariant().Contains("lod")) continue;
-
-                    MeshRenderer renderer = tree.gameObject.transform.GetChild(0).GetComponent<MeshRenderer>();
-                    if (renderer)
-                    {
-                        ReplaceMainTexture(renderer.material);
-                    }
+                    ReplaceMainTexture(renderer.material);
                 }
-            
+            }
+
 
         }
 
-        //replace method
+        //for new regions
+        public static void ReplaceInstancedTreeTextures(string scene)
+        {
+            RenderObjectInstance TreeRenderer = GetInstancedObject(scene);
+            if (TreeRenderer != null && TreeRenderer.m_Category == RenderObjectInstance.Category.Tree)
+            {
+                RenderObjectInstanceBatches.PerBatch TreeBatches = TreeRenderer.m_Batches.m_Batches;               
+                RenderObjectInstanceBatches.PerBatch.RenderInfo[] TreeBatchRenderInfos = TreeBatches.m_RenderInfos;
+
+                foreach (var Renderer in TreeBatchRenderInfos)
+                {
+
+                    if (Renderer.m_Materials.Count < 1) continue;
+
+                    ReplaceMainTexture(Renderer.m_Materials.ElementAt(0));
+                }
+            }
+
+        }
+
+        private static RenderObjectInstance GetInstancedObject(string scene)
+        {
+
+            if (scene == "AshCanyonRegion" || scene == "BlackrockRegion")
+            {
+                return GameObject.Find("ArtRenderer").GetComponent<RenderObjectInstance>();
+            }
+            else if (scene == "HubRegion") return GameObject.Find("ArtRenderers/Instancing").GetComponent<RenderObjectInstance>();
+            else if (scene == "AirfieldRegion") return GameObject.Find("ArtRenderer/Instanceing").GetComponent<RenderObjectInstance>();
+            else if (scene == "LongRailTransitionZone") return GameObject.Find("Art_Renderers/Instancing").GetComponent<RenderObjectInstance>();
+            else if (scene == "CanneryRegion") return GameObject.Find("Art/Art_Rendering").GetComponent<RenderObjectInstance>();
+            else if (scene == "CanyonRoadTransitionZone" || scene == "BlackrockTransitionZone") return GameObject.Find("ArtRenderers/Instancing").GetComponent<RenderObjectInstance>();
+            else return null;
+        }
+
+        //main replace method
         public static void ReplaceMainTexture(Material mat)
         {
             //check for all pine tree textures here
@@ -219,19 +247,21 @@ namespace ImprovedTrees.Utilities
 
             DynamicTreeData dtd = GameObject.Find("SCRIPT_EnvironmentSystems").GetComponent<DynamicTreeData>();
 
-            if(dtd == null) return textures[0];
-
+            if (dtd == null)
+            {
+                return textures[0];
+            }
             float acc = dtd.GetCurrentAccumulation();
 
-            if (acc >= dtd.clearAccumulation && acc <= dtd.lowestAccumulation) return textures[0];
-            else if (acc >= dtd.lowestAccumulation && acc <= dtd.lowAccumulation) return textures[1];
-            else if (acc >= dtd.lowAccumulation && acc <= dtd.lowMediumAccumulation) return textures[2];
-            else if (acc >= dtd.lowMediumAccumulation && acc <= dtd.mediumAccumulation) return textures[3];
-            else if (acc >= dtd.mediumAccumulation && acc <= dtd.mediumHighAccumulation) return textures[4];
-            else if (acc >= dtd.mediumHighAccumulation && acc <= dtd.highAccumulation) return textures[5];
-            else if (acc >= dtd.highAccumulation && acc <= dtd.highestAccumulation) return textures[6];
-            else if (acc >= dtd.highestAccumulation && acc <= dtd.fullAccumulation) return textures[7];
-            else return textures[7];
+            if (acc >= dtd.clearAccumulation && acc < dtd.lowestAccumulation) return textures[0];
+            else if (acc >= dtd.lowestAccumulation && acc < dtd.lowAccumulation) return textures[1];
+            else if (acc >= dtd.lowAccumulation && acc < dtd.lowMediumAccumulation) return textures[2];
+            else if (acc >= dtd.lowMediumAccumulation && acc < dtd.mediumAccumulation) return textures[3];
+            else if (acc >= dtd.mediumAccumulation && acc < dtd.mediumHighAccumulation) return textures[4];
+            else if (acc >= dtd.mediumHighAccumulation && acc < dtd.highAccumulation) return textures[5];
+            else if (acc >= dtd.highAccumulation && acc < dtd.highestAccumulation) return textures[6];
+            else if (acc >= dtd.highestAccumulation && acc < dtd.fullAccumulation) return textures[7];
+            else return textures[8];
         }
 
     }

@@ -4,39 +4,63 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Il2Cpp;
-using ImprovedTrees.DynamicTrees;
-using ImprovedTrees.Utilities;
+using DynamicTrees.DynamicTreesComponent;
+using DynamicTrees.Utilities;
 using Unity.VisualScripting;
+using UnityEngine.Analytics;
 
-namespace ImprovedTrees.Patches
+namespace DynamicTrees.Patches
 {
     internal class MainPatches
     {
 
+        /**
         [HarmonyPatch(typeof(RenderObjectInstanceBatches.PerBatch), nameof(RenderObjectInstanceBatches.PerBatch.SetRenderInfo))]
 
         public class ReplaceTreeTextureRenderer
         {
-            public static void Prefix(ref int batchIndex, ref Renderer renderer, ref Mesh mesh, ref int lod, ref bool forceOnlyLod0Shadow, RenderObjectInstanceBatches.PerBatch __instance)
+            public static void Prefix(ref int batchIndex, ref Renderer renderer, ref Mesh mesh, int lod, ref bool forceOnlyLod0Shadows)
             {
-                Material testMat = renderer.material;
+                
+                    Material mat = renderer.material;
 
-                TextureHelper.ReplaceMainTexture(testMat);
-
+                    TextureHelper th = new TextureHelper();
+                    TextureHelper.ReplaceMainTexture(mat);
+                
             }
+        } **/
+
+        [HarmonyPatch(typeof(RenderObjectInstance), nameof(RenderObjectInstance.Setup))]
+
+        public class ChangeTextureOfInstancedTreesAfterInit
+        {
+
+            public static void Postfix()
+            {
+                TextureHelper.ReplaceInstancedTreeTextures(GameManager.m_ActiveScene);
+            }
+
         }
-
-
 
         [HarmonyPatch(typeof(GearItem), nameof(GearItem.Serialize))]
         public class SaveDynamicTreeDataPrompt
         {
             public static void Postfix()
             {
-                MelonLogger.Msg("GearItem Serialize called");
-
                 DynamicTreeData dynamicTreeData = GameObject.Find("SCRIPT_EnvironmentSystems").GetComponent<DynamicTreeData>();
                 if (dynamicTreeData != null) dynamicTreeData.SaveData();
+            }
+
+        }
+
+        [HarmonyPatch(typeof(PassTime), nameof(PassTime.End))]
+        public class ChangeTexturesOnWhim
+        {
+            public static void Postfix()
+            {
+                if (GameManager.GetWeatherComponent().IsIndoorScene()) return;
+
+                TextureHelper.ReplaceTreeTextures(GameManager.m_ActiveScene);
             }
 
         }

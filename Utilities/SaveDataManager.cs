@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using ModData;
 using MelonLoader;
-using ImprovedTrees.DynamicTrees;
+using DynamicTrees.DynamicTreesComponent;
 
-namespace ImprovedTrees.Utilities
+namespace DynamicTrees.Utilities
 {
     internal class SaveDataManager
     {

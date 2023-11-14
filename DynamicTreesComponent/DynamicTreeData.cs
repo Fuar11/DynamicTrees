@@ -115,7 +115,7 @@ internal class DynamicTreeData : MonoBehaviour
     public float GetStartingAccumulation()
     {
         if (IsNotSnowing()) return clearAccumulation;
-        else if (currentWeather == WeatherStage.LightSnow) return lowestAccumulation;
+        else if (currentWeather == WeatherStage.LightSnow) return lowAccumulation;
         else if (currentWeather == WeatherStage.HeavySnow) return mediumAccumulation;
         else if (currentWeather == WeatherStage.Blizzard) return highAccumulation;
         else return clearAccumulation;

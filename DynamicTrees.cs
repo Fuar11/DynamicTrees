@@ -24,7 +24,7 @@ namespace DynamicTrees
 
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
-            if (sceneName.ToLowerInvariant().Contains("menu") || sceneName.ToLowerInvariant().Contains("root") || sceneName.ToLowerInvariant().Contains("empty")) return;
+            if (sceneName.ToLowerInvariant().Contains("menu") || sceneName.ToLowerInvariant().Contains("boot") || sceneName.ToLowerInvariant().Contains("empty")) return;
 
             if(!sceneName.Contains("_SANDBOX") && !sceneName.Contains("_DLC") && !sceneName.Contains("_WILDLIFE"))
             {

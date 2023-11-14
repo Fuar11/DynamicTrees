@@ -14,22 +14,6 @@ namespace DynamicTrees.Patches
     internal class MainPatches
     {
 
-        /**
-        [HarmonyPatch(typeof(RenderObjectInstanceBatches.PerBatch), nameof(RenderObjectInstanceBatches.PerBatch.SetRenderInfo))]
-
-        public class ReplaceTreeTextureRenderer
-        {
-            public static void Prefix(ref int batchIndex, ref Renderer renderer, ref Mesh mesh, int lod, ref bool forceOnlyLod0Shadows)
-            {
-                
-                    Material mat = renderer.material;
-
-                    TextureHelper th = new TextureHelper();
-                    TextureHelper.ReplaceMainTexture(mat);
-                
-            }
-        } **/
-
         [HarmonyPatch(typeof(RenderObjectInstance), nameof(RenderObjectInstance.Setup))]
 
         public class ChangeTextureOfInstancedTreesAfterInit

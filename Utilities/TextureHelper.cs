@@ -18,7 +18,7 @@ namespace DynamicTrees.Utilities
     {
 
         public static string[] pineTrees = { "TRN_TreeBarkPine_Clear", "TRN_TreeBarkPine_Lowest", "TRN_TreeBarkPine_Low", "TRN_TreeBarkPine_LowMedium", "TRN_TreeBarkPine_Medium", "TRN_TreeBarkPine_HighMedium", "TRN_TreeBarkPine_High", "TRN_TreeBarkPine_Highest", "TRN_TreeBarkPine_Snow_A" };
-        public static string[] spruceTrees = { };
+        public static string[] cedarTrees = { "TRN_TreeBarkCedar_Clear", "TRN_TreeBarkCedar_Low", "TRN_TreeBarkCedar_LowMedium", "TRN_TreeBarkCedar_Medium", "TRN_TreeBarkCedar_HighMedium", "TRN_TreeBarkCedar_High", "TRN_TreeBarkCedar_Highest", "TRN_TreeBarkCedar_Highest", "TRN_TreeCedarBark_Snow_B" };
 
         //entry
         public static void ReplaceTreeTextures(string scene, bool runInstancedTrees = false)
@@ -241,7 +241,11 @@ namespace DynamicTrees.Utilities
             {
                 mat.mainTexture = Main.TexturesBundle.LoadAsset<Texture>(GetTextureBasedOnWeather(pineTrees));
             }
-            //else if(mat.mainTexture.name == "")
+            //check for all cedar tree textures here
+            else if (cedarTrees.Contains(mat.mainTexture.name))
+            {
+                mat.mainTexture = Main.TexturesBundle.LoadAsset<Texture>(GetTextureBasedOnWeather(cedarTrees));
+            }
 
         }
 

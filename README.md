@@ -4,10 +4,20 @@ Dynamic Trees is a visual and graphical mod for The Long Dark.
 
 It aims to add a bit more realism and immersion to the game by making the textures of the trees more dynamic, changing from bare green to partially covered to fully white as snow accumulates.
 
-* Default texture of pine & cedar trees changed to coniferous green.
-* Dynamic snow accumulation calculations depending on current weather & wind.
-* Light and heavy snowfall, including blizzards, accumulates snow. Modified by wind.
-* Clear & non-snowfall weather will decrease snow accumulation provided it's windy enough.
+* Custom tree textures that change colour of foliage over time, starting from coniferous green to the solid white we're used to.
+* Dynamic snow accumulation calculation in real time based on current weather and wind. Light and heavy snow will increase accumulation, amplified by winds. Clear & non-snowy weather will decrease snow build on trees, provided there is sufficient wind.
+  
+Textures will change on scene load as well as whenever each accumulation threshold is hit. They are designed to be gradual steps up as to not be too jarring.
 
-The textures on the trees will update in real-time as you hit a certain threshold. Each texture has been designed to gradually increase/decrease in coverage. 
+## Installation
 
+* Install MelonLoader by downloading and running [MelonLoader.Installer.exe](https://github.com/HerpDerpinstine/MelonLoader/releases/latest/download/MelonLoader.Installer.exe)
+* Install the following dependencies in your mods folder: 
+
+- [ModData](https://github.com/dommrogers/ModData/releases/latest)
+
+* Download and install the latest release and drop it in your mods folder
+
+## Special Thanks
+
+A huge thank you goes out to [Jods](https://github.com/Jods-Its) for the textures that make this mod possible.

@@ -35,9 +35,12 @@ namespace DynamicTrees.Patches
         public class ChangeTextureOfInstancedTreesAfterInit
         {
 
-            public static void Postfix()
+            public static void Postfix(RenderObjectInstance __instance)
             {
+                if (__instance.m_Category != RenderObjectInstance.Category.Tree) return;
                 TextureHelper.ReplaceInstancedTreeTextures(GameManager.m_ActiveScene);
+                DynamicTreeData dtd = GameObject.Find("SCRIPT_EnvironmentSystems").GetComponent<DynamicTreeData>();
+                if (dtd != null) dtd.hasInstancedTrees = true;
             }
 
         }
@@ -52,18 +55,5 @@ namespace DynamicTrees.Patches
             }
 
         }
-
-        [HarmonyPatch(typeof(PassTime), nameof(PassTime.End))]
-        public class ChangeTexturesOnWhim
-        {
-            public static void Postfix()
-            {
-                if (GameManager.GetWeatherComponent().IsIndoorScene()) return;
-
-                TextureHelper.ReplaceTreeTextures(GameManager.m_ActiveScene);
-            }
-
-        }
-
     }
 }

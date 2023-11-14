@@ -1,4 +1,6 @@
 ﻿using DynamicTrees.Utilities;
+using static Il2Cpp.AkMIDIEvent;
+using static Il2CppSystem.DateTimeParse;
 
 namespace DynamicTrees.DynamicTreesComponent;
 
@@ -11,14 +13,20 @@ internal class DynamicTreeData : MonoBehaviour
     WindStrength currentWind;
 
     public float clearAccumulation = 0; //0cm
-    public float lowestAccumulation = 10; //5cm
-    public float lowAccumulation = 20; //10cm
-    public float lowMediumAccumulation = 30; //15cm
-    public float mediumAccumulation = 50; //25cm
-    public float mediumHighAccumulation = 70; //35cm
-    public float highAccumulation = 80; //45cm
-    public float highestAccumulation = 90; //50cm
+    public float lowestAccumulation = 5; //5cm
+    public float lowAccumulation = 15; //10cm
+    public float lowMediumAccumulation = 40; //15cm
+    public float mediumAccumulation = 65; //25cm
+    public float mediumHighAccumulation = 80; //35cm
+    public float highAccumulation = 85; //45cm
+    public float highestAccumulation = 95; //50cm
     public float fullAccumulation = 100; //55-60cm
+
+    public string scene = "";
+    public bool hasInstancedTrees;
+    public enum state { Clear, Lowest, Low, LowMed, Med, MedHigh, High, Highest, Full };
+
+    public state currentState;
 
     float currentAccumulation = 0;
     float accumulationAmountPerHour = 0;
@@ -27,6 +35,7 @@ internal class DynamicTreeData : MonoBehaviour
     {
         currentWeather = GameManager.GetWeatherComponent().GetWeatherStage();
         currentWind = GameManager.GetWindComponent().GetStrength();
+        scene = GameManager.m_ActiveScene;
         LoadAndSaveData();
     }
 
@@ -43,9 +52,15 @@ internal class DynamicTreeData : MonoBehaviour
         float tODHours = GameManager.GetTimeOfDayComponent().GetTODHours(Time.deltaTime);
         Accumulate(tODHours);
 
+        state prevState = currentState;
+        currentState = SetState();
+
+        if (HitThreshold(prevState))
+        {
+            TextureHelper.ReplaceTreeTextures(scene, hasInstancedTrees);
+        }
+
     }
-
-
 
     public void Accumulate(float numHoursDelta)
     {
@@ -63,7 +78,7 @@ internal class DynamicTreeData : MonoBehaviour
         {
             accumulationAmount = 0;
 
-            if (currentAccumulation >= 85f) accumulationAmount = -5f;
+            if (currentAccumulation >= 80f) accumulationAmount = -10f;
 
             if (currentWind == WindStrength.SlightlyWindy) accumulationAmount -= 2f;
             else if (currentWind == WindStrength.Windy) accumulationAmount -= 5f;
@@ -73,14 +88,14 @@ internal class DynamicTreeData : MonoBehaviour
         else if (currentWeather == WeatherStage.LightSnow)
         {
             accumulationAmount = 3f;
-            if (currentWind == WindStrength.SlightlyWindy) accumulationAmount += 2f;
-            else if (currentWind == WindStrength.Windy) accumulationAmount += 5f;
-            else if (currentWind == WindStrength.VeryWindy) accumulationAmount += 7f;
-            else if (currentWind == WindStrength.Blizzard) accumulationAmount += 10f;
+            if (currentWind == WindStrength.SlightlyWindy) accumulationAmount += 1f;
+            else if (currentWind == WindStrength.Windy) accumulationAmount += 3f;
+            else if (currentWind == WindStrength.VeryWindy) accumulationAmount += 5f;
+            else if (currentWind == WindStrength.Blizzard) accumulationAmount += 7f;
         }
         else if (currentWeather == WeatherStage.HeavySnow)
         {
-            accumulationAmount = 10f;
+            accumulationAmount = 7f;
             if (currentWind == WindStrength.SlightlyWindy) accumulationAmount += 3f;
             else if (currentWind == WindStrength.Windy) accumulationAmount += 6f;
             else if (currentWind == WindStrength.VeryWindy) accumulationAmount += 8f;
@@ -109,6 +124,26 @@ internal class DynamicTreeData : MonoBehaviour
     {
         if (currentWeather != WeatherStage.LightSnow && currentWeather != WeatherStage.HeavySnow && currentWeather != WeatherStage.Blizzard) return true;
         else return false;
+    }
+    public bool HitThreshold(state prevState)
+    {
+
+        if (accumulationAmountPerHour == 0 || GameManager.GetWeatherComponent().IsIndoorScene()) return false;
+
+        if (prevState == currentState) return false;
+        else return true;
+    }
+    private state SetState()
+    {
+        if (currentAccumulation >= clearAccumulation && currentAccumulation < lowestAccumulation) return state.Clear;
+        else if (currentAccumulation >= lowestAccumulation && currentAccumulation < lowAccumulation) return state.Lowest;
+        else if (currentAccumulation >= lowAccumulation && currentAccumulation < lowMediumAccumulation) return state.Low;
+        else if (currentAccumulation >= lowMediumAccumulation && currentAccumulation < mediumAccumulation) return state.LowMed;
+        else if (currentAccumulation >= mediumAccumulation && currentAccumulation < mediumHighAccumulation) return state.Med;
+        else if (currentAccumulation >= mediumHighAccumulation && currentAccumulation < highAccumulation) return state.MedHigh;
+        else if (currentAccumulation >= highAccumulation && currentAccumulation < highestAccumulation) return state.High;
+        else if (currentAccumulation >= highestAccumulation && currentAccumulation < fullAccumulation) return state.Highest;
+        else return state.Full;
     }
     public void LoadAndSaveData()
     {

@@ -21,8 +21,11 @@ namespace DynamicTrees.Utilities
         public static string[] spruceTrees = { };
 
         //entry
-        public static void ReplaceTreeTextures(string scene)
+        public static void ReplaceTreeTextures(string scene, bool runInstancedTrees = false)
         {
+
+            if (runInstancedTrees) ReplaceInstancedTreeTextures(scene);
+
             ReplaceTerrainTreeTextures(scene);
             ReplaceInSceneTreeTextures(scene);
         }
@@ -51,7 +54,7 @@ namespace DynamicTrees.Utilities
             }
 
         }
-        private static TerrainData GetTerrainDataPerScene(string scene)
+        public static TerrainData GetTerrainDataPerScene(string scene)
         {
 
             TerrainData terrainData = null;
@@ -261,7 +264,7 @@ namespace DynamicTrees.Utilities
             else if (acc >= dtd.mediumHighAccumulation && acc < dtd.highAccumulation) return textures[5];
             else if (acc >= dtd.highAccumulation && acc < dtd.highestAccumulation) return textures[6];
             else if (acc >= dtd.highestAccumulation && acc < dtd.fullAccumulation) return textures[7];
-            else return textures[8];
+            else return textures[7];
         }
 
     }

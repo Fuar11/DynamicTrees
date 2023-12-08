@@ -45,7 +45,6 @@ internal class DynamicTreeData : MonoBehaviour
 
     public void Update()
     {
-
         currentWeather = GameManager.GetWeatherComponent().GetWeatherStage();
         currentWind = GameManager.GetWindComponent().GetStrength();
 

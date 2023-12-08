@@ -29,15 +29,15 @@
 	<!-- List of used references -->
 	<ItemGroup>
 		<!-- This is the base reference. MUST EXIST -->
-		<PackageReference Include="STBlade.Modding.TLD.Il2CppAssemblies.Windows" Version="2.23.0" />
+		<PackageReference Include="STBlade.Modding.TLD.Il2CppAssemblies.Windows" Version="2.25.0" />
 		<!-- This is only if you use the ModSettings -->
 		<PackageReference Include="STBlade.Modding.TLD.ModSettings" Version="1.9.0" />
 		<!-- Only if you need ModComponent -->
-		<PackageReference Include="STBlade.Modding.TLD.ModComponent" Version="6.0.1" />
+		<PackageReference Include="STBlade.Modding.TLD.ModComponent" Version="6.2.3" />
 		<!-- Only if you need LocalizationUtilities -->
 		<PackageReference Include="STBlade.Modding.TLD.LocalizationUtilities" Version="2.0.0" />
 		<!-- Only if you need CraftingRevisions  -->
-		<PackageReference Include="STBlade.Modding.TLD.CraftingRevisions" Version="2.0.1" />
+		<PackageReference Include="STBlade.Modding.TLD.CraftingRevisions" Version="2.2.3" />
 		<!-- Only if you need GearSpawner -->
 		<PackageReference Include="STBlade.Modding.TLD.GearSpawner" Version="2.3.1" />
 		<!-- Only if you need ModData  -->

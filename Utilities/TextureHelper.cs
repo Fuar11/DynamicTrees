@@ -11,6 +11,7 @@ using Il2Cpp;
 using DynamicTrees.DynamicTreesComponent;
 using Unity.VisualScripting;
 using UnityEngine.Analytics;
+using Random = System.Random;
 
 namespace DynamicTrees.Utilities
 {
@@ -23,14 +24,13 @@ namespace DynamicTrees.Utilities
         //entry
         public static void ReplaceTreeTextures(string scene, bool runInstancedTrees = false)
         {
-
             if (runInstancedTrees) ReplaceInstancedTreeTextures(scene);
 
             ReplaceTerrainTreeTextures(scene);
-            ReplaceInSceneTreeTextures(scene);
+            //ReplaceInSceneTreeTextures(scene);
         }
 
-        //for old regions
+        //for regions still using Unity Terrain
         private static void ReplaceTerrainTreeTextures(string scene)
         {
             TerrainData terrainData = GetTerrainDataPerScene(scene);
@@ -59,59 +59,11 @@ namespace DynamicTrees.Utilities
 
             TerrainData terrainData = null;
 
-            if (scene == "LakeRegion")
-            {
-                terrainData = GameObject.Find("Art/Terrains/Terrain").GetComponent<Terrain>().terrainData;
-            }
-            else if (scene == "MarshRegion")
-            {
-                terrainData = GameObject.Find("Art/Terrain/Terrain_main").GetComponent<Terrain>().terrainData;
-            }
-            else if (scene == "RuralRegion")
-            {
-                terrainData = GameObject.Find("Art/Terrain_RuralMain").GetComponent<Terrain>().terrainData;
-            }
-            else if (scene == "CoastalRegion")
-            {
-                terrainData = GameObject.Find("Art/Terrain_CoastalMain").GetComponent<Terrain>().terrainData;
-            }
-            else if (scene == "WhalingStationRegion")
-            {
-                terrainData = GameObject.Find("Art/Terrain_WhaleMain").GetComponent<Terrain>().terrainData;
-            }
-            else if (scene == "HighwayTransitionZone")
-            {
-                terrainData = GameObject.Find("Art/HighwayTerrain_main").GetComponent<Terrain>().terrainData;
-            }
-            else if (scene == "CrashMountainRegion")
-            {
-                terrainData = GameObject.Find("Art/Terrain/CrashMountainTerrain_main").GetComponent<Terrain>().terrainData;
-            }
-            else if (scene == "MarshRegion")
-            {
-                terrainData = GameObject.Find("Art/Terrain/Terrain_main").GetComponent<Terrain>().terrainData;
-            }
-            else if (scene == "TracksRegion")
-            {
-                terrainData = GameObject.Find("Art/Terrain/TracksTerrain_main").GetComponent<Terrain>().terrainData;
-            }
-            else if (scene == "RavineTransitionZone")
-            {
-                terrainData = GameObject.Find("Art/TerrainRavineExtensionMain").GetComponent<Terrain>().terrainData;
-            }
-            else if (scene == "DamRiverTransitionZoneB")
+            if (scene == "DamRiverTransitionZoneB")
             {
                 terrainData = GameObject.Find("Art/Terrain/DamRiverTerrain_main").GetComponent<Terrain>().terrainData;
             }
-            else if (scene == "MountainTownRegion")
-            {
-                terrainData = GameObject.Find("Art/Terrain/Terrains/MountainTown_main_terrain").GetComponent<Terrain>().terrainData;
-            }
-            else if (scene == "RiverValleyRegion")
-            {
-                terrainData = GameObject.Find("Art/Terrains/RiverValleyTerrain_Main").GetComponent<Terrain>().terrainData;
-            }
-
+            
             return terrainData;
         }
 
@@ -176,7 +128,6 @@ namespace DynamicTrees.Utilities
         }
         private static void ReplaceInSceneTreeTextures(string scene)
         {
-
             GameObject Trees = GetInSceneTreesPerScene(scene);
             Transform treeObjects = Trees.transform;
 
@@ -198,12 +149,14 @@ namespace DynamicTrees.Utilities
 
         }
 
-        //for new regions
         public static void ReplaceInstancedTreeTextures(string scene)
         {
             RenderObjectInstance TreeRenderer = GetInstancedObject(scene);
+
             if (TreeRenderer != null && TreeRenderer.m_Category == RenderObjectInstance.Category.Tree)
             {
+                MelonLogger.Msg("Render object instance is tree category");
+
                 RenderObjectInstanceBatches.PerBatch TreeBatches = TreeRenderer.m_Batches.m_Batches;               
                 RenderObjectInstanceBatches.PerBatch.RenderInfo[] TreeBatchRenderInfos = TreeBatches.m_RenderInfos;
 
@@ -221,16 +174,26 @@ namespace DynamicTrees.Utilities
         private static RenderObjectInstance GetInstancedObject(string scene)
         {
 
-            if (scene == "AshCanyonRegion" || scene == "BlackrockRegion")
+            RenderObjectInstance[] rois = null;
+
+            if (scene == "AshCanyonRegion" || scene == "BlackrockRegion" || scene == "MiningRegion" || scene == "RuralRegion" || scene == "WhalingStationRegion" || scene == "TracksRegion")
             {
-                return GameObject.Find("ArtRenderer").GetComponent<RenderObjectInstance>();
+                rois = GameObject.Find("ArtRenderer").GetComponents<RenderObjectInstance>();
             }
-            else if (scene == "HubRegion") return GameObject.Find("ArtRenderers/Instancing").GetComponent<RenderObjectInstance>();
-            else if (scene == "AirfieldRegion") return GameObject.Find("ArtRenderer/Instanceing").GetComponent<RenderObjectInstance>();
-            else if (scene == "LongRailTransitionZone") return GameObject.Find("Art_Renderers/Instancing").GetComponent<RenderObjectInstance>();
-            else if (scene == "CanneryRegion") return GameObject.Find("Art/Art_Rendering").GetComponent<RenderObjectInstance>();
-            else if (scene == "CanyonRoadTransitionZone" || scene == "BlackrockTransitionZone") return GameObject.Find("ArtRenderers/Instancing").GetComponent<RenderObjectInstance>();
-            else return null;
+            else if (scene == "HubRegion") rois = GameObject.Find("ArtRenderers/Instancing").GetComponents<RenderObjectInstance>();
+            else if (scene == "AirfieldRegion") rois = GameObject.Find("ArtRenderer/Instanceing").GetComponents<RenderObjectInstance>();
+            else if (scene == "LongRailTransitionZone") rois = GameObject.Find("Art_Renderers/Instancing").GetComponents<RenderObjectInstance>();
+            else if (scene == "CanneryRegion") rois = GameObject.Find("Art/Art_Rendering").GetComponents<RenderObjectInstance>();
+            else if (scene == "CanyonRoadTransitionZone" || scene == "BlackrockTransitionZone") rois = GameObject.Find("ArtRenderers/Instancing").GetComponents<RenderObjectInstance>();
+            else if (scene == "LakeRegion" || scene == "CoastalRegion" || scene == "MarshRegion" || scene == "RiverValleyRegion" || scene == "RavineTransitionZone") rois = GameObject.Find("ArtRenderers").GetComponents<RenderObjectInstance>();
+            else if (scene == "HighwayTransitionZone") rois = GameObject.Find("ArtInstancing").GetComponents<RenderObjectInstance>();
+            else if (scene == "CrashMountainRegion") rois = GameObject.Find("Art/ArtRenderers").GetComponents<RenderObjectInstance>();
+            else if (scene == "MountainTownRegion") rois = GameObject.Find("Art/Art_Renderers").GetComponents<RenderObjectInstance>();
+
+
+            if (rois == null || rois.Length == 0) return null;
+            return rois.FirstOrDefault(roi => roi.m_Category == RenderObjectInstance.Category.Tree);
+
         }
 
         //main replace method
@@ -260,14 +223,20 @@ namespace DynamicTrees.Utilities
             }
             float acc = dtd.GetCurrentAccumulation();
 
-            if (acc >= dtd.clearAccumulation && acc < dtd.lowestAccumulation) return textures[0];
-            else if (acc >= dtd.lowestAccumulation && acc < dtd.lowAccumulation) return textures[1];
-            else if (acc >= dtd.lowAccumulation && acc < dtd.lowMediumAccumulation) return textures[2];
-            else if (acc >= dtd.lowMediumAccumulation && acc < dtd.mediumAccumulation) return textures[3];
-            else if (acc >= dtd.mediumAccumulation && acc < dtd.mediumHighAccumulation) return textures[4];
-            else if (acc >= dtd.mediumHighAccumulation && acc < dtd.highAccumulation) return textures[5];
-            else if (acc >= dtd.highAccumulation && acc < dtd.highestAccumulation) return textures[6];
-            else if (acc >= dtd.highestAccumulation && acc < dtd.fullAccumulation) return textures[7];
+            Random rand = new System.Random();
+
+            int lowVariation = rand.Next(0, 1);
+            int midVariation = rand.Next(-1, 1);
+            int highVariation = rand.Next(-1, 0);
+
+            if (acc >= dtd.clearAccumulation && acc < dtd.lowestAccumulation) return textures[0 + lowVariation];
+            else if (acc >= dtd.lowestAccumulation && acc < dtd.lowAccumulation) return textures[1 + midVariation];
+            else if (acc >= dtd.lowAccumulation && acc < dtd.lowMediumAccumulation) return textures[2 + midVariation];
+            else if (acc >= dtd.lowMediumAccumulation && acc < dtd.mediumAccumulation) return textures[3 + midVariation];
+            else if (acc >= dtd.mediumAccumulation && acc < dtd.mediumHighAccumulation) return textures[4 + midVariation];
+            else if (acc >= dtd.mediumHighAccumulation && acc < dtd.highAccumulation) return textures[5 + midVariation];
+            else if (acc >= dtd.highAccumulation && acc < dtd.highestAccumulation) return textures[6 + midVariation ];
+            else if (acc >= dtd.highestAccumulation && acc < dtd.fullAccumulation) return textures[7 + highVariation];
             else return textures[7];
         }
 

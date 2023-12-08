@@ -22,6 +22,8 @@ namespace DynamicTrees.Patches
             public static void Postfix(RenderObjectInstance __instance)
             {
                 if (__instance.m_Category != RenderObjectInstance.Category.Tree) return;
+
+                MelonLogger.Msg("Render Object Instance for trees is alive!");
                 TextureHelper.ReplaceInstancedTreeTextures(GameManager.m_ActiveScene);
                 DynamicTreeData dtd = GameObject.Find("SCRIPT_EnvironmentSystems").GetComponent<DynamicTreeData>();
                 if (dtd != null) dtd.hasInstancedTrees = true;

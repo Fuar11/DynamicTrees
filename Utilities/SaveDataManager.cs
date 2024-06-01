@@ -4,30 +4,35 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
-using ModData;
 using MelonLoader;
 using DynamicTrees.DynamicTreesComponent;
+using DynamicTrees.Utilities.JSON;
+using MelonLoader.Utils;
 
 namespace DynamicTrees.Utilities
 {
-    internal class SaveDataManager
+    public class SaveDataManager
     {
-        ModDataManager dm = new ModDataManager("Improved Trees", false);
+        //ModDataManager dm = new ModDataManager("Improved Trees", false);
 
-        public void Save(DynamicTreeSaveDataProxy data)
+        public async Task Save(DynamicTreeSaveDataProxy data)
         {
-            string? dataString;
-            dataString = JsonSerializer.Serialize<DynamicTreeSaveDataProxy>(data);
-            dm.Save(dataString);
+            await JsonFile.SaveAsync<DynamicTreeSaveDataProxy>($"{MelonEnvironment.ModsDirectory}/DynamicTrees.json", data);
+
+            //string? dataString;
+            //dataString = await JsonSerializer.SerializeAsync<DynamicTreeSaveDataProxy>(data);
+            //dm.Save(dataString);
         }
 
-        public DynamicTreeSaveDataProxy Load()
-        {
-            string? dataString = dm.Load();
-            if (dataString is null) return null;
 
-            DynamicTreeSaveDataProxy? data = JsonSerializer.Deserialize<DynamicTreeSaveDataProxy>(dataString);
-            return data;
+		public async Task<DynamicTreeSaveDataProxy?> Load()
+        {
+            //string? dataString = dm.Load();
+            //if (dataString is null) return null;
+
+            //DynamicTreeSaveDataProxy? data = await JsonSerializer.DeserializeAsync<DynamicTreeSaveDataProxy>(dataString);
+            //return data;
+            return await JsonFile.LoadAsync<DynamicTreeSaveDataProxy>($"{MelonEnvironment.ModsDirectory}/DynamicTrees.json", true);
         }
 
     }

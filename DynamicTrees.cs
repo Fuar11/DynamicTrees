@@ -1,53 +1,85 @@
+global using DynamicTrees.Utilities.JSON;
+
+using MelonLoader.Utils;
+using ComplexLogger;
+
 using DynamicTrees.Utilities;
-using Unity.VisualScripting;
 using DynamicTrees.DynamicTreesComponent;
 
 namespace DynamicTrees
 {
-    public class Main : MelonMod
-    {
-        private static AssetBundle? assetBundle;
-        internal static AssetBundle TexturesBundle
-        {
-            get => assetBundle ?? throw new System.NullReferenceException(nameof(assetBundle));
-        }
+	public class Main : MelonMod
+	{
+		public static string SaveDataFile { get; } = Path.Combine(MelonEnvironment.ModsDirectory, "DynamicTrees", "DynamicTrees.json");
 
-        internal static SaveDataManager sdm = new SaveDataManager();
+		internal static AssetBundle TexturesBundle { get; set; }
+		internal static SaveDataManager SaveDataManager;
+		internal static ComplexLogger<Main> Logger = new();
+		internal static DynamicTreeData DynamicTreeData;
+		internal static List<DynamicTreeTexture> TreeTextures { get; set; } = [];
 
-        public override void OnInitializeMelon()
-        {
-            MelonLogger.Msg("Dynamic Trees is online");
+		public override async void OnInitializeMelon()
+		{
+			SaveDataManager ??= new();
 
-            assetBundle = LoadAssetBundle("DynamicTrees.Textures.dynamictrees");
+			if (SaveDataManager == null)
+			{
+				Logger.Log("SaveDataManager remains null", FlaggedLoggingLevel.Error);
+				return;
+			}
 
-        }
+			if (!Directory.Exists(Path.Combine(MelonEnvironment.ModsDirectory, "DynamicTrees"))) Directory.CreateDirectory(Path.Combine(MelonEnvironment.ModsDirectory, "DynamicTrees"));
 
-        public override void OnSceneWasInitialized(int buildIndex, string sceneName)
-        {
-            if (sceneName.ToLowerInvariant().Contains("menu") || sceneName.ToLowerInvariant().Contains("boot") || sceneName.ToLowerInvariant().Contains("empty")) return;
+			TexturesBundle = LoadAssetBundle("DynamicTrees.Textures.dynamictrees");
+			if (TexturesBundle == null) Logger.Log($"TexturesBundle is null", FlaggedLoggingLevel.Error);
+			await LoadAllTreeTextures();
+		}
 
-            if(!sceneName.Contains("_SANDBOX") && !sceneName.Contains("_DLC") && !sceneName.Contains("_WILDLIFE"))
-            {
-                if (!GameObject.Find("SCRIPT_EnvironmentSystems").GetComponent<DynamicTreeData>())
-                {
-                    GameObject.Find("SCRIPT_EnvironmentSystems").AddComponent<DynamicTreeData>();
-                }
-            }
+		public override void OnSceneWasInitialized(int buildIndex, string sceneName)
+		{
+			if (SceneUtilities.IsScenePlayable(sceneName))
+			{
+				GameObject DynamicTreeObject = new() { name = "DynamicTreeObject", layer = vp_Layer.Default };
+				UnityEngine.Object.Instantiate(DynamicTreeObject, GameManager.GetVpFPSPlayer().transform);
+				GameObject.DontDestroyOnLoad(DynamicTreeObject);
+				DynamicTreeData ??= DynamicTreeObject.AddComponent<DynamicTreeData>();
+			}
 
-            if (GameManager.GetWeatherComponent().IsIndoorScene()) return;
+			TextureHelper.ReplaceTreeTextures(sceneName);
+		}
 
-            TextureHelper.ReplaceTreeTextures(sceneName);
-        }
+		public override async void OnSceneWasLoaded(int buildIndex, string sceneName)
+		{
+			if (SaveDataManager != null && DynamicTreeData != null && DynamicTreeData.SaveDataProxy != null) await SaveDataManager.Save(DynamicTreeData.SaveDataProxy);
+		}
 
-        private static AssetBundle LoadAssetBundle(string path)
-        {
-            using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(path);
-            MemoryStream memoryStream = new MemoryStream((int)stream.Length);
-            stream.CopyTo(memoryStream);
+		public static AssetBundle LoadAssetBundle(string name)
+		{
+			Logger.Log($"Attempting to load an AssetBundle with name: {name}", FlaggedLoggingLevel.Debug);
+			using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name))
+			{
+				MemoryStream? memory = new();
+				stream.CopyTo(memory);
+				return AssetBundle.LoadFromMemory(memory.ToArray());
+			};
+		}
 
-            return memoryStream.Length != 0
-                ? AssetBundle.LoadFromMemory(memoryStream.ToArray())
-                : throw new System.Exception("No data loaded!");
-        }
-    }
+		public static async Task LoadAllTreeTextures()
+		{
+			foreach (string item in TextureHelper.pineTrees)
+			{
+				await LoadTreeTexture(item);
+			}
+			foreach (string item in TextureHelper.cedarTrees)
+			{
+				await LoadTreeTexture(item);
+			}
+		}
+
+		public static async Task LoadTreeTexture(string name)
+		{
+			Logger.Log($"LoadTreeTexture({name})", FlaggedLoggingLevel.Debug);
+			TreeTextures.Add(new DynamicTreeTexture() { Name = name, Texture = TexturesBundle?.LoadAsset<Texture>(name) });
+		}
+	}
 }

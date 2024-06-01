@@ -9,9 +9,9 @@
         /// <summary>The machine readable name of the mod (no special characters or spaces)</summary>
         public const string Name                            = "DynamicTrees";
         /// <summary>Who made the mod</summary>
-        public const string Author                          = "Fuar";
+        public const string Author                          = "Fuar, The Illusion";
         /// <summary>Current version (Using Major.Minor.Build) </summary>
-        public const string Version                         = "1.1.0";
+        public const string Version                         = "1.1.1";
         /// <summary>Name used on GUI's, like ModSettings</summary>
         public const string GUIName                         = "Dynamic Trees";
         /// <summary>The minimum Melon Loader version that your mod requires</summary>
@@ -27,7 +27,7 @@
         public const string DownloadLink                    = null;
         /// <summary>Copyright info</summary>
         /// <remarks>When updating the year, use the StartYear-CurrentYear format eg(Copyright © 2020-2023)</remarks>
-        public const string Copyright                       = "Copyright © Fuar 2023";
+        public const string Copyright                       = "Copyright © 2023-2024";
         /// <summary>Trademark info</summary>
         public const string Trademark                       = null;
         /// <summary>Product Name (Generally use the Name)</summary>

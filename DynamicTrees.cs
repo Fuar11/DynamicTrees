@@ -53,6 +53,12 @@ namespace DynamicTrees
 			if (SaveDataManager != null && DynamicTreeData != null && DynamicTreeData.SaveDataProxy != null) await SaveDataManager.Save(DynamicTreeData.SaveDataProxy);
 		}
 
+		public override void OnApplicationQuit()
+		{
+			SaveDataManager.Save(DynamicTreeData.SaveDataProxy);
+			base.OnApplicationQuit();
+		}
+
 		public static AssetBundle LoadAssetBundle(string name)
 		{
 			Logger.Log($"Attempting to load an AssetBundle with name: {name}", FlaggedLoggingLevel.Debug);

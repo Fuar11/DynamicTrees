@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Il2Cpp;
 using DynamicTrees.DynamicTreesComponent;
 using DynamicTrees.Utilities;
-using Unity.VisualScripting;
 using UnityEngine.Analytics;
 
 namespace DynamicTrees.Patches

@@ -1,177 +1,194 @@
 ﻿using DynamicTrees.Utilities;
-using static Il2Cpp.AkMIDIEvent;
-using static Il2CppSystem.DateTimeParse;
 
 namespace DynamicTrees.DynamicTreesComponent;
 
 [RegisterTypeInIl2Cpp]
-internal class DynamicTreeData : MonoBehaviour
+public class DynamicTreeData : MonoBehaviour
 {
+	#region Constants
+	public float clearAccumulation { get; } = 0; //0cm
+	public float lowestAccumulation { get; } = 5; //5cm
+	public float lowAccumulation { get; } = 15; //10cm
+	public float lowMediumAccumulation { get; } = 40; //15cm
+	public float mediumAccumulation { get; } = 65; //25cm
+	public float mediumHighAccumulation { get; } = 80; //35cm
+	public float highAccumulation { get; } = 85; //45cm
+	public float highestAccumulation { get; } = 95; //50cm
+	public float fullAccumulation { get; } = 100; //55-60cm
+	#endregion
 
-    //WeatherStage previousWeather;
-    WeatherStage currentWeather;
-    WindStrength currentWind;
+	public bool hasInstancedTrees;
+	public enum state { Clear, Lowest, Low, LowMed, Med, MedHigh, High, Highest, Full };
 
-    public float clearAccumulation = 0; //0cm
-    public float lowestAccumulation = 5; //5cm
-    public float lowAccumulation = 15; //10cm
-    public float lowMediumAccumulation = 40; //15cm
-    public float mediumAccumulation = 65; //25cm
-    public float mediumHighAccumulation = 80; //35cm
-    public float highAccumulation = 85; //45cm
-    public float highestAccumulation = 95; //50cm
-    public float fullAccumulation = 100; //55-60cm
+	public state currentState;
 
-    public string scene = "";
-    public bool hasInstancedTrees;
-    public enum state { Clear, Lowest, Low, LowMed, Med, MedHigh, High, Highest, Full };
+	public float currentAccumulation { get; set; } = 0;
+	public float accumulationAmountPerHour { get; set; } = 0;
 
-    public state currentState;
+	public DynamicTreeSaveDataProxy? SaveDataProxy = new();
 
-    float currentAccumulation = 0;
-    float accumulationAmountPerHour = 0;
+	public async void Start()
+	{
+		await LoadAndSaveData();
+	}
+	public async void Update()
+	{
+		await Accumulate(GameManager.GetTimeOfDayComponent().GetTODHours(Time.deltaTime));
 
-    public void Awake()
-    {
-        currentWeather = GameManager.GetWeatherComponent().GetWeatherStage();
-        currentWind = GameManager.GetWindComponent().GetStrength();
-        scene = GameManager.m_ActiveScene;
-        LoadAndSaveData();
-    }
+		state prevState = currentState;
+		currentState = SetState();
 
-    public void Start()
-    {
-    }
+		if (HitThreshold(prevState))
+		{
+			TextureHelper.ReplaceTreeTextures(GameManager.m_ActiveScene, hasInstancedTrees);
+		}
 
-    public void Update()
-    {
-        currentWeather = GameManager.GetWeatherComponent().GetWeatherStage();
-        currentWind = GameManager.GetWindComponent().GetStrength();
+	}
 
-        float tODHours = GameManager.GetTimeOfDayComponent().GetTODHours(Time.deltaTime);
-        Accumulate(tODHours);
+	public async Task Accumulate(float numHoursDelta)
+	{
+		accumulationAmountPerHour = await CalculateAccumulationAmountPerHour();
+		currentAccumulation += accumulationAmountPerHour * numHoursDelta;
 
-        state prevState = currentState;
-        currentState = SetState();
+		currentAccumulation = Mathf.Clamp(currentAccumulation, 0f, 100f);
+	}
 
-        if (HitThreshold(prevState))
-        {
-            TextureHelper.ReplaceTreeTextures(scene, hasInstancedTrees);
-        }
+	public async Task<float> CalculateAccumulationAmountPerHour()
+	{
+		float accumulationAmount = 0;
 
-    }
+		switch (GameManager.GetWeatherComponent().GetWeatherStage())
+		{
+			case WeatherStage.DenseFog:
+			case WeatherStage.PartlyCloudy:
+			case WeatherStage.Clear:
+			case WeatherStage.Cloudy:
+			case WeatherStage.LightFog:
+			case WeatherStage.ClearAurora:
+			case WeatherStage.ElectrostaticFog:
+				accumulationAmount = 0;
+				if (currentAccumulation >= 80f) accumulationAmount = -10f;
 
-    public void Accumulate(float numHoursDelta)
-    {
-        accumulationAmountPerHour = CalculateAccumulationAmountPerHour();
-        currentAccumulation += accumulationAmountPerHour * numHoursDelta;
+				switch (GameManager.GetWindComponent().m_CurrentStrength)
+				{
+					case WindStrength.SlightlyWindy:
+						accumulationAmount -= 2f;
+						break;
+					case WindStrength.Windy:
+						accumulationAmount -= 5f;
+						break;
+					case WindStrength.VeryWindy:
+						accumulationAmount -= 10f;
+						break;
+					case WindStrength.Blizzard:
+						accumulationAmount -= 20f;
+						break;
+					default:
+						break;
+				}
 
-        currentAccumulation = Mathf.Clamp(currentAccumulation, 0f, 100f);
-    }
-    public float CalculateAccumulationAmountPerHour()
-    {
+				break;
+			case WeatherStage.LightSnow:
+				accumulationAmount = 3f;
+				switch (GameManager.GetWindComponent().m_CurrentStrength)
+				{
+					case WindStrength.SlightlyWindy:
+						accumulationAmount += 1f;
+						break;
+					case WindStrength.Windy:
+						accumulationAmount += 3f;
+						break;
+					case WindStrength.VeryWindy:
+						accumulationAmount += 5f;
+						break;
+					case WindStrength.Blizzard:
+						accumulationAmount += 7f;
+						break;
+					default:
+						break;
+				}
+				break;
+			case WeatherStage.HeavySnow:
+				accumulationAmount = 7f;
+				switch (GameManager.GetWindComponent().m_CurrentStrength)
+				{
+					case WindStrength.SlightlyWindy:
+						accumulationAmount += 3f;
+						break;
+					case WindStrength.Windy:
+						accumulationAmount += 6f;
+						break;
+					case WindStrength.VeryWindy:
+						accumulationAmount += 8f;
+						break;
+					case WindStrength.Blizzard:
+						accumulationAmount += 10f;
+						break;
+					default:
+						break;
+				}
+				break;
+			case WeatherStage.Blizzard:
+				accumulationAmount = 30f;
+				break;
+			default:
+				break;
+		}
 
-        float accumulationAmount = 0;
+		return accumulationAmount;
+	}
+	public float GetCurrentAccumulation()
+	{
+		return currentAccumulation;
+	}
+	public float GetStartingAccumulation()
+	{
+		if (IsNotSnowing()) return clearAccumulation;
+		else if (GameManager.GetWeatherComponent().GetWeatherStage() == WeatherStage.LightSnow) return lowAccumulation;
+		else if (GameManager.GetWeatherComponent().GetWeatherStage() == WeatherStage.HeavySnow) return mediumAccumulation;
+		else if (GameManager.GetWeatherComponent().GetWeatherStage() == WeatherStage.Blizzard) return highAccumulation;
+		else return clearAccumulation;
+	}
+	public bool IsNotSnowing()
+	{
+		if (GameManager.GetWeatherComponent().GetWeatherStage() != WeatherStage.LightSnow && GameManager.GetWeatherComponent().GetWeatherStage() != WeatherStage.HeavySnow && GameManager.GetWeatherComponent().GetWeatherStage() != WeatherStage.Blizzard) return true;
+		else return false;
+	}
+	public bool HitThreshold(state prevState)
+	{
+		if (accumulationAmountPerHour == 0 || GameManager.GetWeatherComponent().IsIndoorScene()) return false;
 
-        if (IsNotSnowing())
-        {
-            accumulationAmount = 0;
+		if (prevState == currentState) return false;
+		else return true;
+	}
+	private state SetState()
+	{
+		if (currentAccumulation >= clearAccumulation && currentAccumulation < lowestAccumulation) return state.Clear;
+		else if (currentAccumulation >= lowestAccumulation && currentAccumulation < lowAccumulation) return state.Lowest;
+		else if (currentAccumulation >= lowAccumulation && currentAccumulation < lowMediumAccumulation) return state.Low;
+		else if (currentAccumulation >= lowMediumAccumulation && currentAccumulation < mediumAccumulation) return state.LowMed;
+		else if (currentAccumulation >= mediumAccumulation && currentAccumulation < mediumHighAccumulation) return state.Med;
+		else if (currentAccumulation >= mediumHighAccumulation && currentAccumulation < highAccumulation) return state.MedHigh;
+		else if (currentAccumulation >= highAccumulation && currentAccumulation < highestAccumulation) return state.High;
+		else if (currentAccumulation >= highestAccumulation && currentAccumulation < fullAccumulation) return state.Highest;
+		else return state.Full;
+	}
+	public async Task LoadAndSaveData()
+	{
+		SaveDataProxy ??= await Main.SaveDataManager?.Load();
 
-            if (currentAccumulation >= 80f) accumulationAmount = -10f;
+		if (SaveDataProxy == null)
+		{
+			currentAccumulation = GetStartingAccumulation();
 
-            if (currentWind == WindStrength.SlightlyWindy) accumulationAmount -= 2f;
-            else if (currentWind == WindStrength.Windy) accumulationAmount -= 5f;
-            else if (currentWind == WindStrength.VeryWindy) accumulationAmount -= 10f;
-            else if (currentWind == WindStrength.Blizzard) accumulationAmount -= 20f;
-        }
-        else if (currentWeather == WeatherStage.LightSnow)
-        {
-            accumulationAmount = 3f;
-            if (currentWind == WindStrength.SlightlyWindy) accumulationAmount += 1f;
-            else if (currentWind == WindStrength.Windy) accumulationAmount += 3f;
-            else if (currentWind == WindStrength.VeryWindy) accumulationAmount += 5f;
-            else if (currentWind == WindStrength.Blizzard) accumulationAmount += 7f;
-        }
-        else if (currentWeather == WeatherStage.HeavySnow)
-        {
-            accumulationAmount = 7f;
-            if (currentWind == WindStrength.SlightlyWindy) accumulationAmount += 3f;
-            else if (currentWind == WindStrength.Windy) accumulationAmount += 6f;
-            else if (currentWind == WindStrength.VeryWindy) accumulationAmount += 8f;
-            else if (currentWind == WindStrength.Blizzard) accumulationAmount += 10f;
-        }
-        else if (currentWeather == WeatherStage.Blizzard)
-        {
-            accumulationAmount = 30f;
-        }
-
-        return accumulationAmount;
-    }
-    public float GetCurrentAccumulation()
-    {
-        return currentAccumulation;
-    }
-    public float GetStartingAccumulation()
-    {
-        if (IsNotSnowing()) return clearAccumulation;
-        else if (currentWeather == WeatherStage.LightSnow) return lowAccumulation;
-        else if (currentWeather == WeatherStage.HeavySnow) return mediumAccumulation;
-        else if (currentWeather == WeatherStage.Blizzard) return highAccumulation;
-        else return clearAccumulation;
-    }
-    public bool IsNotSnowing()
-    {
-        if (currentWeather != WeatherStage.LightSnow && currentWeather != WeatherStage.HeavySnow && currentWeather != WeatherStage.Blizzard) return true;
-        else return false;
-    }
-    public bool HitThreshold(state prevState)
-    {
-
-        if (accumulationAmountPerHour == 0 || GameManager.GetWeatherComponent().IsIndoorScene()) return false;
-
-        if (prevState == currentState) return false;
-        else return true;
-    }
-    private state SetState()
-    {
-        if (currentAccumulation >= clearAccumulation && currentAccumulation < lowestAccumulation) return state.Clear;
-        else if (currentAccumulation >= lowestAccumulation && currentAccumulation < lowAccumulation) return state.Lowest;
-        else if (currentAccumulation >= lowAccumulation && currentAccumulation < lowMediumAccumulation) return state.Low;
-        else if (currentAccumulation >= lowMediumAccumulation && currentAccumulation < mediumAccumulation) return state.LowMed;
-        else if (currentAccumulation >= mediumAccumulation && currentAccumulation < mediumHighAccumulation) return state.Med;
-        else if (currentAccumulation >= mediumHighAccumulation && currentAccumulation < highAccumulation) return state.MedHigh;
-        else if (currentAccumulation >= highAccumulation && currentAccumulation < highestAccumulation) return state.High;
-        else if (currentAccumulation >= highestAccumulation && currentAccumulation < fullAccumulation) return state.Highest;
-        else return state.Full;
-    }
-    public void LoadAndSaveData()
-    {
-        SaveDataManager sdm = Main.sdm;
-        DynamicTreeSaveDataProxy? dataToSaveOrLoad;
-
-        dataToSaveOrLoad = sdm.Load();
-
-        if(dataToSaveOrLoad == null)
-        {
-            currentAccumulation = GetStartingAccumulation();
-
-            dataToSaveOrLoad = new DynamicTreeSaveDataProxy();
-            dataToSaveOrLoad.savedAccumulation = currentAccumulation;
-        }
-        else
-        {
-            currentAccumulation = dataToSaveOrLoad.savedAccumulation;
-        }
-        
-        sdm.Save(dataToSaveOrLoad);
-    }
-    public void SaveData()
-    {
-        SaveDataManager sdm = Main.sdm;
-        DynamicTreeSaveDataProxy? dataToSave = new DynamicTreeSaveDataProxy();
-
-        dataToSave.savedAccumulation = currentAccumulation;
-        sdm.Save(dataToSave);
-    }
-
+			SaveDataProxy = new();
+			SaveDataProxy.savedAccumulation = currentAccumulation;
+		}
+		else
+		{
+			currentAccumulation = SaveDataProxy.savedAccumulation;
+		}
+		
+		await Main.SaveDataManager.Save(SaveDataProxy);
+	}
 }

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,18 +22,18 @@ namespace DynamicTrees.Utilities
         public static string[] cedarTrees = { "TRN_TreeBarkCedar_Clear", "TRN_TreeBarkCedar_Low", "TRN_TreeBarkCedar_LowMedium", "TRN_TreeBarkCedar_Medium", "TRN_TreeBarkCedar_HighMedium", "TRN_TreeBarkCedar_High", "TRN_TreeBarkCedar_Highest", "TRN_TreeBarkCedar_Highest", "TRN_TreeCedarBark_Snow_B" };
 
         //entry
-        public static void ReplaceTreeTextures(string scene, bool runInstancedTrees = false)
+        public static async void ReplaceTreeTextures(string scene, bool runInstancedTrees = false)
         {
-            if (runInstancedTrees) ReplaceInstancedTreeTextures(scene);
+            if (runInstancedTrees) await ReplaceInstancedTreeTextures(scene);
 
-            ReplaceTerrainTreeTextures(scene);
+            await ReplaceTerrainTreeTextures(scene);
             //ReplaceInSceneTreeTextures(scene);
         }
 
         //for regions still using Unity Terrain
-        private static void ReplaceTerrainTreeTextures(string scene)
+        private static async Task<bool> ReplaceTerrainTreeTextures(string scene)
         {
-            TerrainData terrainData = GetTerrainDataPerScene(scene);
+            TerrainData? terrainData = GetTerrainDataPerScene(scene);
             if (terrainData != null)
             {
                 Array treeObjects = terrainData.treePrototypes;
@@ -52,12 +52,12 @@ namespace DynamicTrees.Utilities
                 terrainData.RefreshPrototypes();
 
             }
-
+            return true;
         }
-        public static TerrainData GetTerrainDataPerScene(string scene)
-        {
 
-            TerrainData terrainData = null;
+        public static TerrainData? GetTerrainDataPerScene(string scene)
+        {
+            TerrainData? terrainData = null;
 
             if (scene == "DamRiverTransitionZoneB")
             {
@@ -68,9 +68,8 @@ namespace DynamicTrees.Utilities
         }
 
         //for trees not part of terrain or instancing
-        private static GameObject GetInSceneTreesPerScene(string scene)
+        private static async Task<GameObject> GetInSceneTreesPerScene(string scene)
         {
-
             GameObject trees = new GameObject();
 
             if (scene == "MarshRegion")
@@ -109,7 +108,6 @@ namespace DynamicTrees.Utilities
             {
                 trees = GameObject.Find("Art/Terrain");
             }
-
             //Ash Canyon subregions (which don't cover anything but it's a minor amt of trees)
             if (scene == "AshCanyonRegion_CentralPeak")
             {
@@ -126,55 +124,50 @@ namespace DynamicTrees.Utilities
 
             return trees;
         }
-        private static void ReplaceInSceneTreeTextures(string scene)
+        private static async void ReplaceInSceneTreeTextures(string scene)
         {
-            GameObject Trees = GetInSceneTreesPerScene(scene);
+            GameObject Trees = await GetInSceneTreesPerScene(scene);
             Transform treeObjects = Trees.transform;
 
             for (int i = 0; i < treeObjects.childCount; i++)
             {
                 Transform tree = treeObjects.GetChild(i);
 
-
                 //check to make sure the tree is actually a tree prefab and not some other object, in which case skip to the next one
                 if (tree.gameObject.transform.childCount == 0 || !tree.gameObject.transform.GetChild(0).name.ToLowerInvariant().Contains("lod")) continue;
 
                 MeshRenderer renderer = tree.gameObject.transform.GetChild(0).GetComponent<MeshRenderer>();
-                if (renderer)
+                if (renderer != null)
                 {
-                    ReplaceMainTexture(renderer.material);
+                    await ReplaceMainTexture(renderer.material);
                 }
             }
-
-
         }
 
-        public static void ReplaceInstancedTreeTextures(string scene)
+        public static async Task ReplaceInstancedTreeTextures(string scene)
         {
-            RenderObjectInstance TreeRenderer = GetInstancedObject(scene);
+            RenderObjectInstance? TreeRenderer = await GetInstancedObject(scene);
 
             if (TreeRenderer != null && TreeRenderer.m_Category == RenderObjectInstance.Category.Tree)
             {
-                MelonLogger.Msg("Render object instance is tree category");
+                Main.Logger.Log("Render object instance is tree category", ComplexLogger.FlaggedLoggingLevel.Debug);
 
-                RenderObjectInstanceBatches.PerBatch TreeBatches = TreeRenderer.m_Batches.m_Batches;               
+                RenderObjectInstanceBatches.PerBatch TreeBatches = TreeRenderer.m_Batches.m_Batches;
                 RenderObjectInstanceBatches.PerBatch.RenderInfo[] TreeBatchRenderInfos = TreeBatches.m_RenderInfos;
 
                 foreach (var Renderer in TreeBatchRenderInfos)
                 {
+                    if (Renderer.m_Materials.Count == 0) continue;
 
-                    if (Renderer.m_Materials.Count < 1) continue;
-
-                    ReplaceMainTexture(Renderer.m_Materials.ElementAt(0));
+                    await ReplaceMainTexture(Renderer.m_Materials.ElementAt(0));
                 }
             }
-
         }
 
-        private static RenderObjectInstance GetInstancedObject(string scene)
+        private static async Task<RenderObjectInstance?> GetInstancedObject(string scene)
         {
-
-            RenderObjectInstance[] rois = null;
+            Main.Logger.Log($"GetInstancedObject({scene})", ComplexLogger.FlaggedLoggingLevel.Debug);
+            RenderObjectInstance[]? rois = null;
 
             if (scene == "AshCanyonRegion" || scene == "BlackrockRegion" || scene == "MiningRegion" || scene == "RuralRegion" || scene == "WhalingStationRegion" || scene == "TracksRegion")
             {
@@ -192,36 +185,31 @@ namespace DynamicTrees.Utilities
 
 
             if (rois == null || rois.Length == 0) return null;
-            return rois.FirstOrDefault(roi => roi.m_Category == RenderObjectInstance.Category.Tree);
-
+            return rois?.FirstOrDefault(roi => roi.m_Category == RenderObjectInstance.Category.Tree);
         }
 
         //main replace method
-        public static void ReplaceMainTexture(Material mat)
+        public static async Task ReplaceMainTexture(Material mat)
         {
-            //check for all pine tree textures here
+            Main.Logger.Log($"ReplaceMainTexture({mat.mainTexture.name})", ComplexLogger.FlaggedLoggingLevel.Debug);
+            
             if (pineTrees.Contains(mat.mainTexture.name))
             {
-                mat.mainTexture = Main.TexturesBundle.LoadAsset<Texture>(GetTextureBasedOnWeather(pineTrees));
+	            mat.mainTexture = Main.TexturesBundle.LoadAsset<Texture>(GetTextureBasedOnWeather(pineTrees));
             }
-            //check for all cedar tree textures here
-            else if (cedarTrees.Contains(mat.mainTexture.name))
+            if (cedarTrees.Contains(mat.mainTexture.name))
             {
-                mat.mainTexture = Main.TexturesBundle.LoadAsset<Texture>(GetTextureBasedOnWeather(cedarTrees));
+	            mat.mainTexture = Main.TexturesBundle.LoadAsset<Texture>(GetTextureBasedOnWeather(cedarTrees));
             }
-
         }
 
         public static string GetTextureBasedOnWeather(string[] textures)
         {
-
-            DynamicTreeData dtd = GameObject.Find("SCRIPT_EnvironmentSystems").GetComponent<DynamicTreeData>();
-
-            if (dtd == null)
+            if (Main.DynamicTreeData == null)
             {
                 return textures[0];
             }
-            float acc = dtd.GetCurrentAccumulation();
+            float acc = Main.DynamicTreeData.GetCurrentAccumulation();
 
             Random rand = new System.Random();
 
@@ -229,16 +217,15 @@ namespace DynamicTrees.Utilities
             int midVariation = rand.Next(-1, 1);
             int highVariation = rand.Next(-1, 0);
 
-            if (acc >= dtd.clearAccumulation && acc < dtd.lowestAccumulation) return textures[0 + lowVariation];
-            else if (acc >= dtd.lowestAccumulation && acc < dtd.lowAccumulation) return textures[1 + midVariation];
-            else if (acc >= dtd.lowAccumulation && acc < dtd.lowMediumAccumulation) return textures[2 + midVariation];
-            else if (acc >= dtd.lowMediumAccumulation && acc < dtd.mediumAccumulation) return textures[3 + midVariation];
-            else if (acc >= dtd.mediumAccumulation && acc < dtd.mediumHighAccumulation) return textures[4 + midVariation];
-            else if (acc >= dtd.mediumHighAccumulation && acc < dtd.highAccumulation) return textures[5 + midVariation];
-            else if (acc >= dtd.highAccumulation && acc < dtd.highestAccumulation) return textures[6 + midVariation ];
-            else if (acc >= dtd.highestAccumulation && acc < dtd.fullAccumulation) return textures[7 + highVariation];
+            if (acc >= Main.DynamicTreeData.clearAccumulation && acc < Main.DynamicTreeData.lowestAccumulation) return textures[0 + lowVariation];
+            else if (acc >= Main.DynamicTreeData.lowestAccumulation && acc < Main.DynamicTreeData.lowAccumulation) return textures[1 + midVariation];
+            else if (acc >= Main.DynamicTreeData.lowAccumulation && acc < Main.DynamicTreeData.lowMediumAccumulation) return textures[2 + midVariation];
+            else if (acc >= Main.DynamicTreeData.lowMediumAccumulation && acc < Main.DynamicTreeData.mediumAccumulation) return textures[3 + midVariation];
+            else if (acc >= Main.DynamicTreeData.mediumAccumulation && acc < Main.DynamicTreeData.mediumHighAccumulation) return textures[4 + midVariation];
+            else if (acc >= Main.DynamicTreeData.mediumHighAccumulation && acc < Main.DynamicTreeData.highAccumulation) return textures[5 + midVariation];
+            else if (acc >= Main.DynamicTreeData.highAccumulation && acc < Main.DynamicTreeData.highestAccumulation) return textures[6 + midVariation ];
+            else if (acc >= Main.DynamicTreeData.highestAccumulation && acc < Main.DynamicTreeData.fullAccumulation) return textures[7 + highVariation];
             else return textures[7];
         }
-
     }
 }

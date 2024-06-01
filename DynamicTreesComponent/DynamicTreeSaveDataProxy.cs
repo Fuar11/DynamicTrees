@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DynamicTrees.DynamicTreesComponent
 {
-    internal class DynamicTreeSaveDataProxy
+    public class DynamicTreeSaveDataProxy
     {
         public float savedAccumulation { get; set; }
     }

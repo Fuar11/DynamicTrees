@@ -40,8 +40,6 @@
 		<PackageReference Include="STBlade.Modding.TLD.CraftingRevisions" Version="2.2.3" />
 		<!-- Only if you need GearSpawner -->
 		<PackageReference Include="STBlade.Modding.TLD.GearSpawner" Version="2.3.1" />
-		<!-- Only if you need ModData  -->
-		<PackageReference Include="STBlade.Modding.TLD.ModData" Version="1.5.1" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Reference Include="ComplexLogger">
@@ -67,8 +65,6 @@
 		<Using Include="CraftingRevisions" />
 		<!-- Only if your using GearSpawner -->
 		<Using Include="GearSpawner" />
-		<!-- Only if your using ModData -->
-		<Using Include="ModData" />
 	</ItemGroup>
 
 	<!-- This is a build event. It will copy your dll to the currently defined TheLongDarkPath's Mods folder -->

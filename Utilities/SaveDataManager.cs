@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
-using ModData;
 using MelonLoader;
 using DynamicTrees.DynamicTreesComponent;
 using DynamicTrees.Utilities.JSON;

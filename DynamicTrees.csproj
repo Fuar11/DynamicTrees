@@ -43,6 +43,11 @@
 		<!-- Only if you need ModData  -->
 		<PackageReference Include="STBlade.Modding.TLD.ModData" Version="1.5.1" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Reference Include="ComplexLogger">
+	    <HintPath>..\..\..\Libraries\ComplexLogger.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
 
 	<!-- Most commonly used using's. Add to this so you dont need to define them in the cs files -->
 	<ItemGroup>

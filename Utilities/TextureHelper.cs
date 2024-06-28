@@ -10,7 +10,7 @@ using Il2CppTLD.AddressableAssets;
 using Il2Cpp;
 using DynamicTrees.DynamicTreesComponent;
 using UnityEngine.Analytics;
-using Random = System.Random;
+using Random = System.Random; 
 
 namespace DynamicTrees.Utilities
 {
@@ -19,6 +19,7 @@ namespace DynamicTrees.Utilities
 
         public static string[] pineTrees = { "TRN_TreeBarkPine_Clear", "TRN_TreeBarkPine_Lowest", "TRN_TreeBarkPine_Low", "TRN_TreeBarkPine_LowMedium", "TRN_TreeBarkPine_Medium", "TRN_TreeBarkPine_HighMedium", "TRN_TreeBarkPine_High", "TRN_TreeBarkPine_Highest", "TRN_TreeBarkPine_Snow_A" };
         public static string[] cedarTrees = { "TRN_TreeBarkCedar_Clear", "TRN_TreeBarkCedar_Low", "TRN_TreeBarkCedar_LowMedium", "TRN_TreeBarkCedar_Medium", "TRN_TreeBarkCedar_HighMedium", "TRN_TreeBarkCedar_High", "TRN_TreeBarkCedar_Highest", "TRN_TreeBarkCedar_Highest", "TRN_TreeCedarBark_Snow_B" };
+        private static string imagePath = "../Textures/Images";
 
         //entry
         public static async void ReplaceTreeTextures(string scene, bool runInstancedTrees = false)
@@ -45,7 +46,7 @@ namespace DynamicTrees.Utilities
                         continue;
                     }
                     Material mat = meshRenderer.material;
-                    ReplaceMainTexture(mat);
+                    await ReplaceMainTexture(mat);
                 }
 
                 terrainData.RefreshPrototypes();
@@ -103,9 +104,13 @@ namespace DynamicTrees.Utilities
             {
                 trees = GameObject.Find("Art/Trees");
             }
-            else if (scene == "RavineTransitionZone")
+            else if (scene == "RavineTransitionZone")   
             {
                 trees = GameObject.Find("Art/Terrain");
+            }
+            else if (scene == "MountainPassRegion")
+            {
+                trees = GameObject.Find("Root/Scene_Art/Instance_Assets/TreeGroup_Pine");
             }
             //Ash Canyon subregions (which don't cover anything but it's a minor amt of trees)
             if (scene == "AshCanyonRegion_CentralPeak")
@@ -120,6 +125,8 @@ namespace DynamicTrees.Utilities
             {
                 trees = GameObject.Find("Root/Art/Trees");
             }
+
+               
 
             return trees;
         }
@@ -181,7 +188,7 @@ namespace DynamicTrees.Utilities
             else if (scene == "HighwayTransitionZone") rois = GameObject.Find("ArtInstancing").GetComponents<RenderObjectInstance>();
             else if (scene == "CrashMountainRegion") rois = GameObject.Find("Art/ArtRenderers").GetComponents<RenderObjectInstance>();
             else if (scene == "MountainTownRegion") rois = GameObject.Find("Art/Art_Renderers").GetComponents<RenderObjectInstance>();
-
+            else if (scene == "MountainPassRegion") rois = GameObject.Find("Art_Renderer").GetComponents<RenderObjectInstance>();
 
             if (rois == null || rois.Length == 0) return null;
             return rois?.FirstOrDefault(roi => roi.m_Category == RenderObjectInstance.Category.Tree);
@@ -194,11 +201,14 @@ namespace DynamicTrees.Utilities
             
             if (pineTrees.Contains(mat.mainTexture.name))
             {
-	            mat.mainTexture = Main.TexturesBundle.LoadAsset<Texture>(GetTextureBasedOnWeather(pineTrees));
+                //mat.mainTexture = ImageUtilities.GetPNG(imagePath, GetTextureBasedOnWeather(pineTrees));
+                mat.mainTexture = Main.TexturesBundle.LoadAsset<Texture>(GetTextureBasedOnWeather(pineTrees));
+
             }
             if (cedarTrees.Contains(mat.mainTexture.name))
             {
-	            mat.mainTexture = Main.TexturesBundle.LoadAsset<Texture>(GetTextureBasedOnWeather(cedarTrees));
+                //mat.mainTexture = ImageUtilities.GetPNG(imagePath, GetTextureBasedOnWeather(cedarTrees));
+                mat.mainTexture = Main.TexturesBundle.LoadAsset<Texture>(GetTextureBasedOnWeather(cedarTrees));
             }
         }
 
@@ -212,9 +222,9 @@ namespace DynamicTrees.Utilities
 
             Random rand = new System.Random();
 
-            int lowVariation = rand.Next(0, 1);
-            int midVariation = rand.Next(-1, 1);
-            int highVariation = rand.Next(-1, 0);
+            int lowVariation = rand.Next(0, 2);
+            int midVariation = rand.Next(-2, 2);
+            int highVariation = rand.Next(-2, 0);
 
             if (acc >= Main.DynamicTreeData.clearAccumulation && acc < Main.DynamicTreeData.lowestAccumulation) return textures[0 + lowVariation];
             else if (acc >= Main.DynamicTreeData.lowestAccumulation && acc < Main.DynamicTreeData.lowAccumulation) return textures[1 + midVariation];

@@ -2,7 +2,6 @@ global using DynamicTrees.Utilities.JSON;
 
 using MelonLoader.Utils;
 using ComplexLogger;
-
 using DynamicTrees.Utilities;
 using DynamicTrees.DynamicTreesComponent;
 
@@ -16,7 +15,7 @@ namespace DynamicTrees
 		internal static SaveDataManager SaveDataManager;
 		internal static ComplexLogger<Main> Logger = new();
 		internal static DynamicTreeData DynamicTreeData;
-		internal static List<DynamicTreeTexture> TreeTextures { get; set; } = [];
+		internal static List<DynamicTreeTexture> TreeTextures { get; set; } = new List<DynamicTreeTexture>();
 
 		public override async void OnInitializeMelon()
 		{

@@ -14,7 +14,7 @@ Textures will change on scene load as well as whenever each accumulation thresho
 * Install MelonLoader by downloading and running [MelonLoader.Installer.exe](https://github.com/HerpDerpinstine/MelonLoader/releases/latest/download/MelonLoader.Installer.exe)
 * Install the following dependencies in your mods folder: 
 
-- [ModData](https://github.com/dommrogers/ModData/releases/latest)
+- [ComplexLogger](https://github.com/Arkhorse/Complex-Logger/releases/latest)
 
 * Download and install the latest release and drop it in your mods folder
 

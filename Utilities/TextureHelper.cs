@@ -223,7 +223,7 @@ namespace DynamicTrees.Utilities
             Random rand = new System.Random();
 
             int lowVariation = rand.Next(0, 2);
-            int midVariation = rand.Next(-2, 2);
+            int midVariation = rand.Next(-1, 2);
             int highVariation = rand.Next(-2, 0);
 
             if (acc >= Main.DynamicTreeData.clearAccumulation && acc < Main.DynamicTreeData.lowestAccumulation) return textures[0 + lowVariation];

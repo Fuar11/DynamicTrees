@@ -49,12 +49,15 @@ namespace DynamicTrees
 
 		public override async void OnSceneWasLoaded(int buildIndex, string sceneName)
 		{
-			if (SaveDataManager != null && DynamicTreeData != null && DynamicTreeData.SaveDataProxy != null) await SaveDataManager.Save(DynamicTreeData.SaveDataProxy);
+			if (SaveDataManager != null && DynamicTreeData != null && DynamicTreeData.SaveDataProxy != null)
+			{
+                await SaveDataManager.Save(DynamicTreeData.SaveDataProxy);
+			}
 		}
 
 		public override void OnApplicationQuit()
-		{
-			SaveDataManager.Save(DynamicTreeData.SaveDataProxy);
+		{ 
+            SaveDataManager.Save(DynamicTreeData.SaveDataProxy);
 			base.OnApplicationQuit();
 		}
 
@@ -83,7 +86,7 @@ namespace DynamicTrees
 
 		public static async Task LoadTreeTexture(string name)
 		{
-			Logger.Log($"LoadTreeTexture({name})", FlaggedLoggingLevel.Debug);
+			//Logger.Log($"LoadTreeTexture({name})", FlaggedLoggingLevel.Debug);
 			TreeTextures.Add(new DynamicTreeTexture() { Name = name, Texture = TexturesBundle?.LoadAsset<Texture>(name) });
 		}
 	}

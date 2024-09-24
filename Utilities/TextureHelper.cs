@@ -27,6 +27,8 @@ namespace DynamicTrees.Utilities
             if (runInstancedTrees) await ReplaceInstancedTreeTextures(scene);
 
             await ReplaceTerrainTreeTextures(scene);
+            await ReplaceModdedRegionTreeTextures(scene);
+
             //ReplaceInSceneTreeTextures(scene);
         }
 
@@ -54,6 +56,36 @@ namespace DynamicTrees.Utilities
             }
             return true;
         }
+
+        private static async Task<bool> ReplaceModdedRegionTreeTextures(string scene)
+        {
+
+            if (!scene.ToLowerInvariant().Contains("mod")) return false;
+
+            GameObject trees = GameObject.Find("ManualTrees");
+            if(trees != null)
+            {
+                Main.Logger.Log("Replacing manual trees textures", ComplexLogger.FlaggedLoggingLevel.Debug);
+
+                int childCount = trees.transform.childCount;
+
+                for (int i = 0; i < childCount; i++)
+                {
+                    Transform treeTr = trees.transform.GetChild(i);
+                    GameObject tree = treeTr.gameObject;
+                    MeshRenderer meshRenderer = tree.GetComponent<MeshRenderer>();
+                    if (meshRenderer == null)
+                    {
+                        continue;
+                    }
+                    Material mat = meshRenderer.material;
+                    await ReplaceMainTexture(mat);
+                }
+            }
+
+            return true;
+        }
+
 
         public static TerrainData? GetTerrainDataPerScene(string scene)
         {
@@ -197,7 +229,7 @@ namespace DynamicTrees.Utilities
         //main replace method
         public static async Task ReplaceMainTexture(Material mat)
         {
-            Main.Logger.Log($"ReplaceMainTexture({mat.mainTexture.name})", ComplexLogger.FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log($"ReplaceMainTexture({mat.mainTexture.name})", ComplexLogger.FlaggedLoggingLevel.Debug);
             
             if (pineTrees.Contains(mat.mainTexture.name))
             {

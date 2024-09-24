@@ -186,9 +186,9 @@ public class DynamicTreeData : MonoBehaviour
 		}
 		else
 		{
-			currentAccumulation = SaveDataProxy.savedAccumulation;
-		}
-		
-		await Main.SaveDataManager.Save(SaveDataProxy);
+            currentAccumulation = SaveDataProxy.savedAccumulation;
+        }
+
+        await Main.SaveDataManager.Save(SaveDataProxy);
 	}
 }

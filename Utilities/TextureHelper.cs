@@ -62,27 +62,66 @@ namespace DynamicTrees.Utilities
 
             if (!scene.ToLowerInvariant().Contains("mod")) return false;
 
-            GameObject trees = GameObject.Find("ManualTrees");
-            if(trees != null)
-            {
-                Main.Logger.Log("Replacing manual trees textures", ComplexLogger.FlaggedLoggingLevel.Debug);
+            GameObject trees;
+            GameObject treesSm = null;
 
+            if (scene.ToLowerInvariant().Contains("shattered"))
+            {
+                trees = GameObject.Find("Root/MarshTerrain");
+            }
+            else if (scene.ToLowerInvariant().Contains("forsakenshore"))
+            {
+                trees = GameObject.Find("Terrain");
+            }
+            else
+            {
+                trees = GameObject.Find("ManualTrees");
+            }
+
+            if (trees != null)
+            {
                 int childCount = trees.transform.childCount;
 
                 for (int i = 0; i < childCount; i++)
                 {
                     Transform treeTr = trees.transform.GetChild(i);
                     GameObject tree = treeTr.gameObject;
+
+                    if (tree.name == "MarshManualTrees")
+                    {
+                        treesSm = tree;
+                    }
+
                     MeshRenderer meshRenderer = tree.GetComponent<MeshRenderer>();
-                    if (meshRenderer == null)
+                    if (meshRenderer == null || !tree.name.ToLowerInvariant().Contains("tree"))
                     {
                         continue;
                     }
                     Material mat = meshRenderer.material;
                     await ReplaceMainTexture(mat);
                 }
-            }
 
+                //for shattered marsh
+                if (treesSm != null) { 
+                    int childCountSm = treesSm.transform.childCount;
+
+                    for (int j = 0; j < childCountSm; j++)
+                    {
+                        Transform treeTrSm = treesSm.transform.GetChild(j);
+                        GameObject treeSm = treeTrSm.gameObject;
+                        MeshRenderer meshRenderer2 = treeSm.GetComponent<MeshRenderer>();
+
+                        if (meshRenderer2 == null)
+                        {
+                            continue;
+                        }
+                        Material mat = meshRenderer2.material;
+                        await ReplaceMainTexture(mat);
+                    }
+                }
+            }
+            else Main.Logger.Log("TLDev tree instances are null!", ComplexLogger.FlaggedLoggingLevel.Error);
+           
             return true;
         }
 

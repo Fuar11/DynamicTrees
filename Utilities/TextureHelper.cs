@@ -227,8 +227,6 @@ namespace DynamicTrees.Utilities
 
             if (TreeRenderer != null && TreeRenderer.m_Category == RenderObjectInstance.Category.Tree)
             {
-                Main.Logger.Log("Render object instance is tree category", ComplexLogger.FlaggedLoggingLevel.Debug);
-
                 RenderObjectInstanceBatches.PerBatch TreeBatches = TreeRenderer.m_Batches.m_Batches;
                 RenderObjectInstanceBatches.PerBatch.RenderInfo[] TreeBatchRenderInfos = TreeBatches.m_RenderInfos;
 
@@ -243,7 +241,6 @@ namespace DynamicTrees.Utilities
 
         private static async Task<RenderObjectInstance?> GetInstancedObject(string scene)
         {
-            Main.Logger.Log($"GetInstancedObject({scene})", ComplexLogger.FlaggedLoggingLevel.Debug);
             RenderObjectInstance[]? rois = null;
 
             if (scene == "AshCanyonRegion" || scene == "BlackrockRegion" || scene == "MiningRegion" || scene == "RuralRegion" || scene == "WhalingStationRegion" || scene == "TracksRegion")

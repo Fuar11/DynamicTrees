@@ -11,11 +11,11 @@
         /// <summary>Who made the mod</summary>
         public const string Author                          = "Fuar, The Illusion";
         /// <summary>Current version (Using Major.Minor.Build) </summary>
-        public const string Version                         = "1.2.0";
+        public const string Version                         = "1.2.1";
         /// <summary>Name used on GUI's, like ModSettings</summary>
         public const string GUIName                         = "Dynamic Trees";
         /// <summary>The minimum Melon Loader version that your mod requires</summary>
-        public const string MelonLoaderVersion              = "0.6.1";
+        public const string MelonLoaderVersion              = "0.6.6";
         #endregion
 
         #region Optional

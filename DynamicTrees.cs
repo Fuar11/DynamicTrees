@@ -29,9 +29,11 @@ namespace DynamicTrees
 
 			if (!Directory.Exists(Path.Combine(MelonEnvironment.ModsDirectory, "DynamicTrees"))) Directory.CreateDirectory(Path.Combine(MelonEnvironment.ModsDirectory, "DynamicTrees"));
 
-			TexturesBundle = LoadAssetBundle("DynamicTrees.Textures.dynamictrees");
+			TexturesBundle = LoadAssetBundleFromStream("DynamicTrees.Textures.dynamictrees");
 			if (TexturesBundle == null) Logger.Log($"TexturesBundle is null", FlaggedLoggingLevel.Error);
 			await LoadAllTreeTextures();
+
+			Logger.Log("Dynamic Trees is online.", FlaggedLoggingLevel.Always);
 		}
 
 		public override void OnSceneWasInitialized(int buildIndex, string sceneName)
@@ -61,17 +63,20 @@ namespace DynamicTrees
 			base.OnApplicationQuit();
 		}
 
-		public static AssetBundle LoadAssetBundle(string name)
+		public static AssetBundle LoadAssetBundleFromStream(string name)
 		{
 			Logger.Log($"Attempting to load an AssetBundle with name: {name}", FlaggedLoggingLevel.Debug);
-			using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name))
+			using (Stream? stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name))
 			{
-				MemoryStream? memory = new();
-				stream.CopyTo(memory);
-				return AssetBundle.LoadFromMemory(memory.ToArray());
-			};
-		}
+				MemoryStream? memory = new((int)stream.Length);
+				stream!.CopyTo(memory);
 
+				Il2CppSystem.IO.MemoryStream memoryStream = new Il2CppSystem.IO.MemoryStream(memory.ToArray());
+
+				AssetBundle loadFromMemoryInternal = AssetBundle.LoadFromStream(memoryStream);
+				return loadFromMemoryInternal;
+			}
+		}
 		public static async Task LoadAllTreeTextures()
 		{
 			foreach (string item in TextureHelper.pineTrees)

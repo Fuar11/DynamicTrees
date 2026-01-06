@@ -14,7 +14,7 @@ namespace DynamicTrees.Utilities
         /// <returns>The image if all related functions work, otherwise null</returns>
         public static Texture2D? GetImage(string FolderName, string FileName, string ext)
         {
-            Main.Logger.Log("GetImage", FlaggedLoggingLevel.Debug, LoggingSubType.IntraSeparator, null);
+            //Main.Logger.Log("GetImage", FlaggedLoggingLevel.Debug, LoggingSubType.IntraSeparator, null);
 
             Texture2D texture = new(2, 2) { name = FileName };
             byte[]? file = null;

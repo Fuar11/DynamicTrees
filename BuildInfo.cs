@@ -2,20 +2,17 @@
 {
     public static class BuildInfo
     {
-        /* NOTES
-            These must all be constant types. So cant use string.Empty
-        */
         #region Mandatory
         /// <summary>The machine readable name of the mod (no special characters or spaces)</summary>
         public const string Name                            = "DynamicTrees";
         /// <summary>Who made the mod</summary>
-        public const string Author                          = "Fuar, The Illusion";
+        public const string Author                          = "Fuar, The Illusion, Jods-Its";
         /// <summary>Current version (Using Major.Minor.Build) </summary>
-        public const string Version                         = "1.2.1";
+        public const string Version                         = "1.2.2";
         /// <summary>Name used on GUI's, like ModSettings</summary>
         public const string GUIName                         = "Dynamic Trees";
         /// <summary>The minimum Melon Loader version that your mod requires</summary>
-        public const string MelonLoaderVersion              = "0.6.6";
+        //public const string MelonLoaderVersion              = "0.7.2-ci.2388";
         #endregion
 
         #region Optional

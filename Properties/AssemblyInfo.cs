@@ -14,6 +14,6 @@
 [assembly: MelonInfo(typeof(DynamicTrees.Main), BuildInfo.GUIName, BuildInfo.Version, BuildInfo.Author, BuildInfo.DownloadLink)]
 [assembly: MelonGame("Hinterland", "TheLongDark")]
 
-[assembly: VerifyLoaderVersion(BuildInfo.MelonLoaderVersion, true)]
+//[assembly: VerifyLoaderVersion(BuildInfo.MelonLoaderVersion, true)]
 [assembly: MelonPriority(BuildInfo.Priority)]
 [assembly: MelonIncompatibleAssemblies(null)]

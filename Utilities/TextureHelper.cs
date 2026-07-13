@@ -42,15 +42,38 @@ namespace DynamicTrees.Utilities
 
                 foreach (TreePrototype treePrototype in treeObjects)
                 {
+
+                    if (!treePrototype.m_Prefab.name.ToLowerInvariant().Contains("tree") || treePrototype.m_Prefab.name.ToLowerInvariant().Contains("burnt") || treePrototype.m_Prefab.name.ToLowerInvariant().Contains("birch") || treePrototype.m_Prefab.name.ToLowerInvariant().Contains("log")) continue;
+
                     MeshRenderer meshRenderer = treePrototype.m_Prefab.GetComponent<MeshRenderer>();
                     if (meshRenderer == null)
                     {
-                        continue;
+
+                        //because of LOD objects
+                        int childCount = treePrototype.m_Prefab.transform.GetChildCount();
+
+                        for (int j = 0; j < childCount; j++)
+                        {
+
+                            Transform treeTr = treePrototype.m_Prefab.transform.GetChild(j);
+                            GameObject treeChild = treeTr.gameObject;
+
+                            if (!treeChild.name.ToLowerInvariant().Contains("tree") || treeChild.name.ToLowerInvariant().Contains("burnt") || treeChild.name.ToLowerInvariant().Contains("birch") || treeChild.name.ToLowerInvariant().Contains("log")) continue;
+
+                            MeshRenderer LODMeshRenderer = treeChild.GetComponent<MeshRenderer>();
+                            Material LODMat = LODMeshRenderer != null ? LODMeshRenderer.material : null;
+
+                            await ReplaceMainTexture(LODMat);
+                        }
                     }
-                    Material mat = meshRenderer.material;
-                    await ReplaceMainTexture(mat);
+                    else
+                    {
+                        Material mainMat = meshRenderer.material;
+                        await ReplaceMainTexture(mainMat);
+                    }
                 }
 
+                Main.Logger.Log("Refreshing prototypes...", ComplexLogger.FlaggedLoggingLevel.Debug);
                 terrainData.RefreshPrototypes();
 
             }
@@ -63,15 +86,22 @@ namespace DynamicTrees.Utilities
             if (!scene.ToLowerInvariant().Contains("mod")) return false;
 
             GameObject trees;
-            GameObject treesSm = null;
 
             if (scene.ToLowerInvariant().Contains("shattered"))
             {
-                trees = GameObject.Find("Root/MarshTerrain");
+                trees = GameObject.Find("Root/TRN Root/TRN MarshTerrain");
             }
             else if (scene.ToLowerInvariant().Contains("forsakenshore"))
             {
-                trees = GameObject.Find("Terrain");
+                trees = GameObject.Find("ROOT/ART/TERRAIN II");
+            }
+            else if (scene.ToLowerInvariant().Contains("thoroughfare"))
+            {
+                trees = GameObject.Find("Root/TRN/TRN_ManualTrees");
+            }
+            else if (scene.ToLowerInvariant().Contains("mountainpass"))
+            {
+                trees = GameObject.Find("ROOT/GAMEPLAY/ManualTrees/ManualPineTrees/ManualTrees");
             }
             else
             {
@@ -87,35 +117,32 @@ namespace DynamicTrees.Utilities
                     Transform treeTr = trees.transform.GetChild(i);
                     GameObject tree = treeTr.gameObject;
 
-                    if (tree.name == "MarshManualTrees")
-                    {
-                        treesSm = tree;
-                    }
+                    if (!tree.name.ToLowerInvariant().Contains("tree") || tree.name.ToLowerInvariant().Contains("burnt") || tree.name.ToLowerInvariant().Contains("birch") || tree.name.ToLowerInvariant().Contains("log")) continue;
 
                     MeshRenderer meshRenderer = tree.GetComponent<MeshRenderer>();
-                    if (meshRenderer == null || !tree.name.ToLowerInvariant().Contains("tree"))
+                    if (meshRenderer == null)
                     {
-                        continue;
-                    }
-                    Material mat = meshRenderer.material;
-                    await ReplaceMainTexture(mat);
-                }
+                        //because of LOD objects
+                        int childCount2 = tree.transform.GetChildCount();
 
-                //for shattered marsh
-                if (treesSm != null) { 
-                    int childCountSm = treesSm.transform.childCount;
-
-                    for (int j = 0; j < childCountSm; j++)
-                    {
-                        Transform treeTrSm = treesSm.transform.GetChild(j);
-                        GameObject treeSm = treeTrSm.gameObject;
-                        MeshRenderer meshRenderer2 = treeSm.GetComponent<MeshRenderer>();
-
-                        if (meshRenderer2 == null)
+                        for(int j  = 0; j < childCount2; j++)
                         {
-                            continue;
+
+                            Transform treeTr2 = tree.transform.GetChild(j);
+                            GameObject treeChild = treeTr2.gameObject;
+
+                            if (!treeChild.name.ToLowerInvariant().Contains("tree") || treeChild.name.ToLowerInvariant().Contains("burnt") || treeChild.name.ToLowerInvariant().Contains("birch") || treeChild.name.ToLowerInvariant().Contains("log") || treeChild.name.ToLowerInvariant().Contains("manual")) continue;
+
+                            MeshRenderer LODMeshRenderer = treeChild.GetComponent<MeshRenderer>();
+                            Material LODMat = LODMeshRenderer != null ? LODMeshRenderer.material : null;
+
+                            await ReplaceMainTexture(LODMat);
                         }
-                        Material mat = meshRenderer2.material;
+                    }
+                    else
+                    {
+                        Material mat = meshRenderer.material;
+                        Main.Logger.Log($"Replacing textures on main {tree.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
                         await ReplaceMainTexture(mat);
                     }
                 }
@@ -133,8 +160,25 @@ namespace DynamicTrees.Utilities
             if (scene == "DamRiverTransitionZoneB")
             {
                 terrainData = GameObject.Find("Art/Terrain/DamRiverTerrain_main").GetComponent<Terrain>().terrainData;
+                Main.Logger.Log($"Found terrain data for {scene} and it is {terrainData.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
             }
-            
+            else if(scene == "ModShatteredMarsh")
+            {
+                terrainData = GameObject.Find("Root/TRN Root/TRN MarshTerrain/MarshTerrain").GetComponent<Terrain>().terrainData;
+                Main.Logger.Log($"Found terrain data for {scene} and it is {terrainData.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
+            }
+            else if (scene == "ModForsakenShore")
+            {
+                terrainData = GameObject.Find("ROOT/ART/TERRAIN/Mod_ForsakenShores_main").GetComponent<Terrain>().terrainData;
+                Main.Logger.Log($"Found terrain data for {scene} and it is {terrainData.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
+            }
+            else if (scene == "ModRockyThoroughfare")
+            {
+                terrainData = GameObject.Find("Root/TERRAINS/RT_SNOW1").GetComponent<Terrain>().terrainData;
+                Main.Logger.Log($"Found terrain data for {scene} and it is {terrainData.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
+            }
+
+
             return terrainData;
         }
 
@@ -265,8 +309,12 @@ namespace DynamicTrees.Utilities
         //main replace method
         public static async Task ReplaceMainTexture(Material mat)
         {
-            //Main.Logger.Log($"ReplaceMainTexture({mat.mainTexture.name})", ComplexLogger.FlaggedLoggingLevel.Debug);
             
+            if(mat == null || mat.mainTexture == null)
+            {
+                return;
+            }
+
             if (pineTrees.Contains(mat.mainTexture.name))
             {
                 //mat.mainTexture = ImageUtilities.GetPNG(imagePath, GetTextureBasedOnWeather(pineTrees));

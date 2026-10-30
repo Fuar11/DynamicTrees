@@ -15,7 +15,7 @@
 
 	<PropertyGroup>
 		<!-- This should point to wherever your games primary EXE is -->
-		<TheLongDarkPath>C:\Program Files (x86)\Steam\steamapps\common\TheLongDark</TheLongDarkPath>
+		<TheLongDarkPath>C:\Games\Steam\steamapps\common\TheLongDark</TheLongDarkPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -29,7 +29,7 @@
 	<!-- List of used references -->
 	<ItemGroup>
 		<!-- This is the base reference. MUST EXIST -->
-		<PackageReference Include="Waltz.Modding.TLD.Il2CppAssemblies.Windows" Version="2.52.0" />
+		<PackageReference Include="MonsieurMeh.Modding.TLD.Il2CppAssemblies.Windows" Version="2.58.0" />
 	</ItemGroup>
 		
 	<ItemGroup>

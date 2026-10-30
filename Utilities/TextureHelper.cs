@@ -301,6 +301,8 @@ namespace DynamicTrees.Utilities
             else if (scene == "CrashMountainRegion") rois = GameObject.Find("Art/ArtRenderers").GetComponents<RenderObjectInstance>();
             else if (scene == "MountainTownRegion") rois = GameObject.Find("Art/Art_Renderers").GetComponents<RenderObjectInstance>();
             else if (scene == "MountainPassRegion") rois = GameObject.Find("Art_Renderer").GetComponents<RenderObjectInstance>();
+            else if (scene == "PortRemnantRegion") rois = GameObject.Find("ArtRenderers").GetComponents<RenderObjectInstance>();
+            else if (scene.Contains("IslandATrackSection")) rois = GameObject.Find("Art_Renderers").GetComponents<RenderObjectInstance>();
 
             if (rois == null || rois.Length == 0) return null;
             return rois?.FirstOrDefault(roi => roi.m_Category == RenderObjectInstance.Category.Tree);
